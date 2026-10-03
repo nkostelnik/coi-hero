@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>COI Hero social preview</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1280px; height: 640px; overflow: hidden; }
+  body {
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+    color: #fff;
+    background:
+      radial-gradient(900px 500px at 85% 20%, rgba(89,139,255,.45), transparent 60%),
+      linear-gradient(135deg, #1d306f 0%, #2247d9 100%);
+    position: relative;
+  }
+  .left { position: absolute; left: 80px; top: 0; bottom: 0; width: 600px; display: flex; flex-direction: column; justify-content: center; }
+  .brand { display: flex; align-items: center; gap: 16px; margin-bottom: 36px; }
+  .logo { width: 56px; height: 56px; border-radius: 14px; background: #fff; color: #2247d9; font-weight: 900; font-size: 36px; display: grid; place-items: center; }
+  .brand span { font-size: 26px; font-weight: 700; letter-spacing: .2px; opacity: .95; }
+  h1 { font-size: 76px; line-height: 1.02; font-weight: 800; letter-spacing: -1.5px; }
+  .tag { margin-top: 22px; font-size: 30px; line-height: 1.3; font-weight: 500; color: #d9e6ff; max-width: 540px; }
+  .chips { margin-top: 38px; display: flex; gap: 12px; }
+  .chip { font-size: 20px; font-weight: 600; padding: 9px 18px; border-radius: 999px; }
+  .c-red { background: #fee2e2; color: #991b1b; }
+  .c-amb { background: #fef3c7; color: #92400e; }
+  .c-grn { background: #d1fae5; color: #065f46; }
+
+  .card { position: absolute; right: 70px; top: 90px; width: 500px; height: 460px; background: #fff; border-radius: 22px; box-shadow: 0 30px 70px rgba(10,20,70,.45); padding: 22px; color: #0f172a; transform: rotate(2deg); }
+  .review { display: flex; align-items: center; gap: 14px; background: #eef4ff; border: 1px solid #8eb4ff; border-radius: 14px; padding: 12px 14px; }
+  .review b { width: 38px; height: 38px; border-radius: 9px; background: #2247d9; color: #fff; display: grid; place-items: center; font-size: 22px; }
+  .review div { font-size: 17px; font-weight: 700; }
+  .review small { display: block; font-weight: 400; font-size: 13px; color: #64748b; margin-top: 1px; }
+  .cols { margin-top: 16px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .col { border-radius: 12px; border: 1px solid; overflow: hidden; height: 306px; background: #fff; }
+  .col .h { display: flex; justify-content: space-between; align-items: center; padding: 9px 10px; font-weight: 700; font-size: 14px; }
+  .col .n { min-width: 24px; height: 24px; border-radius: 99px; display: grid; place-items: center; color: #fff; font-size: 13px; padding: 0 6px; }
+  .row { padding: 9px 10px; border-top: 1px solid #f1f5f9; }
+  .row i { display: block; font-style: normal; font-size: 12.5px; font-weight: 600; color: #1c39ae; }
+  .row s { display: block; text-decoration: none; font-size: 10.5px; color: #64748b; margin-top: 2px; }
+  .red { border-color: #fca5a5; } .red .h { background: #fee2e2; color: #7f1d1d; } .red .n { background: #dc2626; }
+  .amb { border-color: #fcd34d; } .amb .h { background: #fef3c7; color: #78350f; } .amb .n { background: #f59e0b; }
+  .grn { border-color: #6ee7b7; } .grn .h { background: #d1fae5; color: #064e3b; } .grn .n { background: #059669; }
+  .url { position: absolute; left: 80px; bottom: 40px; font-size: 18px; color: #bcd2ff; letter-spacing: .3px; }
+</style>
+</head>
+<body>
+  <div class="left">
+    <div class="brand"><div class="logo">C</div><span>Certificate of insurance tracker</span></div>
+    <h1>COI Hero</h1>
+    <p class="tag">Collect, organize, and track certificates of insurance.</p>
+    <div class="chips">
+      <span class="chip c-red">Expired</span>
+      <span class="chip c-amb">Expiring soon</span>
+      <span class="chip c-grn">Active</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="review"><b>2</b><div>Needs review<small>Extracted but not yet confirmed</small></div></div>
+    <div class="cols">
+      <div class="col red">
+        <div class="h">Expired <span class="n">7</span></div>
+        <div class="row"><i>Delta Mechanical</i><s>General Liability</s></div>
+        <div class="row"><i>Ironclad Security</i><s>Auto Liability</s></div>
+        <div class="row"><i>Apex Roofing</i><s>Workers Comp</s></div>
+        <div class="row"><i>Apex Roofing</i><s>General Liability</s></div>
+      </div>
+      <div class="col amb">
+        <div class="h">Expiring <span class="n">1</span></div>
+        <div class="row"><i>Copperline Electric</i><s>General Liability</s></div>
+      </div>
+      <div class="col grn">
+        <div class="h">Active <span class="n">25</span></div>
+        <div class="row"><i>Greenfield Env.</i><s>Pollution</s></div>
+        <div class="row"><i>Riverside Freight</i><s>Auto Liability</s></div>
+        <div class="row"><i>Skyline Steel</i><s>General Liability</s></div>
+        <div class="row"><i>Nimbus IT</i><s>Cyber</s></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

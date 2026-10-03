@@ -1,136 +1,117 @@
+<p align="center">
+  <img src="docs/social-preview.png" alt="COI Hero: collect, organize, and track certificates of insurance" width="720">
+</p>
+
 # COI Hero
 
-Collect, organize, and track **certificates of insurance**.
+**Collect, organize, and track certificates of insurance.**
 
-You get a COI PDF in an email from a vendor. Instead of dropping it in a folder
-and forgetting it, drop it into COI Hero: it stores the original, reads the
-carriers / policy numbers / limits / dates off the form, and adds a row to a
-searchable table. It then tracks expirations and checks each vendor and contract
-against your required limits.
+If you work in a business or a legal team, you are usually the one chasing certificates of insurance (COIs) from vendors and counterparties. They arrive as PDFs in email, get saved to a folder, and are never tagged, checked, or searchable again. COI Hero fixes that. Drop a COI in, and it stores the original, reads the key data off the form, and adds it to one searchable table. It then watches for expirations and checks coverage against the requirements in your contracts.
 
-## What it does
+> **Status:** early, local-first prototype. It runs on your own machine with a local SQLite database and has **no authentication**, so do not expose it to the internet. Always confirm extracted values against the original PDF before relying on them. This is a tracking aid, not legal or insurance advice.
 
-- **Ingest**: drag-and-drop or file-picker upload of one or many COI PDFs
-  (also PNG/JPG scans). Email ingestion is planned; `source` is already a
-  first-class field.
-- **Extract**: sends each file to the Anthropic API and pulls out structured
-  fields (ACORD 25 and similar): producer, insured, holder, insurers (A to F
-  plus NAIC), description of operations, and per-line coverage type / carrier /
-  policy # / effective + expiration / limits / additional-insured / waiver of
-  subrogation / primary & non-contributory / per-project aggregate / notice-of-
-  cancellation days. Plus your-side fields you fill in: contract/project
-  reference, internal owner, date received. No key? Files are still stored and
-  you fill in the fields on the review screen (inline, beside the PDF).
-- **Organize**: one searchable, sortable table with two views,
-  _by coverage line_ (every policy's dates at a glance) and _by certificate_.
-  Filter by vendor, coverage type, and status, or just click any status badge /
-  coverage / endorsement pill to filter by it (click again to clear). Select
-  rows for bulk actions (mark reviewed, assign vendor, delete). **Export CSV**
-  (one row per coverage line). Every row links to the original PDF.
-- **Track**: per-coverage status badges (active / expiring soon / expired);
-  the "expiring soon" window is configurable. The dashboard rolls up what's
-  lapsing.
-- **Vendors**: certificates group under a vendor (auto-matched from the
-  "insured" name). The vendor page shows current coverage on file and
-  compliance.
-- **Contracts**: create a contract (title, counterparty, term), give it its
-  own insurance requirements (optionally on top of the global set), link the
-  certificates you collected for it, and see a live "compliant with this
-  contract" flag. Certificates can be linked from the certificate editor too.
-- **Compliance**: global required limits (seeded with common defaults) plus
-  per-vendor and per-contract overrides. Vendors and contracts are flagged
-  where coverage is missing, expired, under-limit, or missing additional-insured
-  / waiver-of-subrogation.
-- **Dashboard**: a blue "needs review" bar over three columns (Expired / red,
-  Expiring soon / amber, Active / green), then vendors and contracts needing
-  attention.
+## Screenshots
 
-## Setup
+| Dashboard | Certificates |
+|---|---|
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Certificates table](docs/screenshots/certificates.png) |
+
+| Contract compliance |
+|---|
+| ![Contract detail with compliance flag](docs/screenshots/contract.png) |
+
+## Features
+
+- **Ingest.** Drag and drop (or browse for) one or many COI PDFs, or PNG/JPG scans. Email ingestion is planned; each certificate already records its `source`.
+- **Extract.** Each file is read by Claude and turned into structured fields: producer, insured, certificate holder, insurers, description of operations, and per coverage line the type, carrier, policy number, effective and expiration dates, limits, additional insured, waiver of subrogation, primary and non-contributory, per-project aggregate, and notice of cancellation. You can edit anything on a review screen beside the PDF.
+- **Organize.** One searchable, sortable table with two views: by coverage line and by certificate. Filter by vendor, coverage type, or status, or click any status badge or pill to filter by it. Bulk actions and CSV export included. Every row links back to the original PDF.
+- **Track.** Per-coverage status (active, expiring soon, expired) with a configurable "expiring soon" window. The dashboard shows a "needs review" bar over three columns: red for expired, yellow for expiring, green for active.
+- **Vendors.** Certificates group automatically under a vendor, matched from the insured name, with a compliance view per vendor.
+- **Contracts.** Create a contract, give it its own insurance requirements (optionally on top of your global ones), link the certificates you collected for it, and get a live "compliant with this contract" flag.
+- **Requirements.** Global minimum limits plus per-vendor and per-contract overrides. Coverage that is missing, expired, under-limit, or missing additional-insured or waiver-of-subrogation is flagged.
+- **Demo mode.** Load a realistic sample dataset with one click, and optionally mock extraction so you can try everything without an API key.
+
+## Quick start
+
+Requires Node.js 20 or newer.
 
 ```bash
+git clone https://github.com/nkostelnik/coi-hero.git
 cd coi-hero
 npm install
-cp .env.local.example .env.local   # then paste your ANTHROPIC_API_KEY
+cp .env.local.example .env.local   # then add your ANTHROPIC_API_KEY
 npm run dev
 ```
 
-Open http://localhost:3100.
+Open <http://localhost:3100>.
 
-### Demo it without an API key
+### Try it without an API key
 
-Go to **/demo** (or the empty-state button on the dashboard) and click
-**Load sample data**: about 10 vendors, 12 certificates, and 3 contracts with
-generated stand-in PDFs and a full spread of statuses (active / expiring /
-expired / under-limit / missing coverage), one vendor with requirement
-overrides, one with a pending renewal request, plus an unassigned and an
-unreviewed certificate.
+Open **/demo** (or use the empty-state button on the dashboard) and click **Load sample data**. You get about 10 vendors, 12 certificates, and 3 contracts, with generated stand-in PDFs and a spread of statuses (active, expiring, expired, under-limit, missing coverage).
 
-To also demo the upload-then-review flow offline, add `COI_DEMO_MODE=1` to
-`.env.local` and restart: any PDF you drop in gets realistic *mock* extracted
-fields (from the file name, not a real reading). `/demo` also has **Reset** and
-**Clear all data**.
+To also try the upload flow offline, set `COI_DEMO_MODE=1` in `.env.local` and restart. Any PDF you drop in then gets realistic mock fields generated from its file name instead of a real reading. `/demo` also has **Reset** and **Clear all data**.
 
-### The API key
+### Real extraction
 
-COI Hero calls the Anthropic API server-side to read each PDF. Get a key at
-<https://console.anthropic.com/> and put it in `coi-hero/.env.local`:
+COI Hero calls the Anthropic API from the server to read each document. Create a key in the [Anthropic Console](https://console.anthropic.com/) and put it in `.env.local`:
 
 ```
 ANTHROPIC_API_KEY=sk-ant-...
-COI_EXTRACT_MODEL=claude-sonnet-5   # optional; claude-opus-5 for messy scans
+COI_EXTRACT_MODEL=claude-sonnet-5   # optional; use a larger model for messy scans
 ```
 
-Restart `npm run dev` after changing `.env.local`. Without a key the app runs
-fine: uploads are stored and extraction is skipped so you enter fields by hand
-(or add a key later and hit **Re-run extraction** on each certificate).
+Restart the dev server after changing `.env.local`. Without a key the app still runs: files are stored and you enter the fields by hand (or add a key later and use **Re-run extraction** on a certificate). Documents you upload are sent to Anthropic for processing, so apply the same judgment you would for any third-party service.
 
-## Where things live
+## How it works
 
-| Thing | Location |
-|---|---|
-| Database (SQLite) | `coi-hero/data/coi-hero.db` |
-| Original PDFs | `coi-hero/data/files/` |
-| Everything in `data/` | git-ignored; delete it to reset |
+1. Upload stores the original file under `data/files/` and creates a certificate row.
+2. The file is sent to Claude, which returns structured JSON that is normalized into coverage lines.
+3. Everything lands in SQLite. Pages read the database directly; the browser calls JSON routes under `/api` for writes.
+4. Status and compliance are computed on read from the dates and your requirements, so changing a rule updates every flag immediately.
 
-## Stack
-
-Next.js (App Router), TypeScript, Tailwind, better-sqlite3, `@anthropic-ai/sdk`.
-Single process, no external services. Pages read SQLite directly; the browser
-calls JSON API routes under `/api` for writes.
-
-### Layout
+## Project layout
 
 ```
 src/
-  app/
-    page.tsx                    Dashboard
-    certificates/               Table (both views) + per-cert editor
-    vendors/                    List + vendor detail
-    contracts/                  List + contract detail (requirements, links, compliance)
-    requirements/               Global + per-vendor limit rules
-    upload/                     Drag-and-drop ingest
-    demo/                       Sample-data controls
-    api/
-      certificates/             POST upload+extract, PATCH, DELETE, /reextract, /bulk, /export
-      contracts/                CRUD, /[id]/certificates linking
-      files/[id]/               Streams the stored PDF back
-      vendors/  requirements/   CRUD
-      demo/                     Seed / reset / wipe
+  app/                  Next.js App Router pages and API routes
+    page.tsx            Dashboard
+    certificates/       Table (both views) and per-certificate editor
+    vendors/            List and vendor detail
+    contracts/          List and contract detail (requirements, links, compliance)
+    requirements/       Global and per-vendor limit rules
+    upload/             Drag-and-drop ingest
+    demo/               Sample-data controls
+    api/                certificates, contracts, vendors, requirements, files, demo
+  components/           UI (tables, editors, uploader)
   lib/
-    db.ts          SQLite access + schema + migrations + seed
-    extract.ts     Anthropic call + result normalization + demo-mode fake
-    compliance.ts  status + vendor/contract requirement evaluation
-    dates.ts       loose-date parsing, status calc
-    ingest.ts      store file, create row, extract
-    demoData.ts    sample vendors / certificates / contracts
-    demoSeed.ts    build the sample dataset
-    samplePdf.ts   zero-dependency PDF writer for the sample COIs
+    db.ts               SQLite access, schema, and migrations
+    extract.ts          Anthropic call, normalization, and demo-mode mock
+    compliance.ts       Status and requirement evaluation
+    dates.ts            Loose date parsing and status calculation
+    ingest.ts           Store file, create row, extract
+    demoData.ts         Sample vendors, certificates, and contracts
+    demoSeed.ts         Builds the sample dataset
+    samplePdf.ts        Zero-dependency PDF writer for the sample COIs
+data/                   SQLite database and stored PDFs (git-ignored)
+docs/                   Screenshots and the social preview image
 ```
 
-## Notes / next steps
+## Tech stack
 
-- Email ingestion (forward a COI to an inbox, it lands in the table).
-- Auth: currently single-user / local only.
-- Renewal reminder digests and per-vendor "request updated COI" email drafts.
-- Per-certificate compliance view; check the endorsement fields (P&NC,
-  per-project aggregate, minimum notice days) in the compliance engine.
+Next.js (App Router), React, TypeScript, Tailwind CSS, better-sqlite3, and the Anthropic SDK. One process and no external services beyond the Anthropic API.
+
+## Data and privacy
+
+Your database and uploaded PDFs live in `data/` on your machine and are git-ignored. `.env.local` (which holds your API key) is also git-ignored. Delete `data/` to reset everything.
+
+## Roadmap
+
+- Email ingestion: forward a COI to an inbox and have it land in the table.
+- Authentication and multi-user support.
+- Renewal reminders and "request an updated COI" email drafts.
+- A per-certificate compliance view that also checks endorsement fields such as primary and non-contributory and minimum notice days.
+- Hosting with a persistent disk (or a hosted database and object storage) so it can run beyond a single machine.
+
+## License
+
+No license has been chosen yet, so all rights are reserved by default.
