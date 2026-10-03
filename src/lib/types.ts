@@ -140,8 +140,19 @@ export interface Requirement {
   created_at: string;
 }
 
+export type ComplianceIssueKind =
+  | "no_coi"
+  | "missing"
+  | "expired"
+  | "expiring_soon"
+  | "no_date"
+  | "limit"
+  | "additional_insured"
+  | "waiver_of_subrogation";
+
 export interface ComplianceIssue {
   coverage_type: CoverageType;
+  kind: ComplianceIssueKind;
   severity: "error" | "warning";
   message: string;
 }

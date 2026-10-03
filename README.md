@@ -26,6 +26,7 @@ If you work in a business or a legal team, you are usually the one chasing certi
 - **Extract.** Each file is read by Claude and turned into structured fields: producer, insured, certificate holder, insurers, description of operations, and per coverage line the type, carrier, policy number, effective and expiration dates, limits, additional insured, waiver of subrogation, primary and non-contributory, per-project aggregate, and notice of cancellation. You can edit anything on a review screen beside the PDF.
 - **Organize.** One searchable, sortable table with two views: by coverage line and by certificate. Filter by vendor, coverage type, or status, or click any status badge or pill to filter by it. Bulk actions and CSV export included. Every row links back to the original PDF.
 - **Track.** Per-coverage status (active, expiring soon, expired) with a configurable "expiring soon" window. The dashboard shows a "needs review" bar over three columns: red for expired, yellow for expiring, green for active.
+- **Digest.** One page (`/digest`) listing, per vendor, every coverage line that is expired or inside the "expiring soon" window plus any compliance gaps (missing coverage, under-limit, missing additional insured or waiver of subrogation), earliest expiration first, with days remaining or overdue. **Download digest** exports the same rows as CSV.
 - **Vendors.** Certificates group automatically under a vendor, matched from the insured name, with a compliance view per vendor.
 - **Contracts.** Create a contract, give it its own insurance requirements (optionally on top of your global ones), link the certificates you collected for it, and get a live "compliant with this contract" flag.
 - **Requirements.** Global minimum limits plus per-vendor and per-contract overrides. Coverage that is missing, expired, under-limit, or missing additional-insured or waiver-of-subrogation is flagged.
@@ -78,15 +79,17 @@ src/
     certificates/       Table (both views) and per-certificate editor
     vendors/            List and vendor detail
     contracts/          List and contract detail (requirements, links, compliance)
+    digest/             Expiring and expired coverage plus compliance gaps, per vendor
     requirements/       Global and per-vendor limit rules
     upload/             Drag-and-drop ingest
     demo/               Sample-data controls
-    api/                certificates, contracts, vendors, requirements, files, demo
+    api/                certificates, contracts, vendors, requirements, files, digest, demo
   components/           UI (tables, editors, uploader)
   lib/
     db.ts               SQLite access, schema, and migrations
     extract.ts          Anthropic call, normalization, and demo-mode mock
     compliance.ts       Status and requirement evaluation
+    digest.ts           Builds the expiration digest from the status and compliance logic
     dates.ts            Loose date parsing and status calculation
     ingest.ts           Store file, create row, extract
     demoData.ts         Sample vendors, certificates, and contracts

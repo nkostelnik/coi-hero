@@ -120,6 +120,7 @@ export function evaluateVendorCompliance(params: {
       issues: [
         {
           coverage_type: "Other",
+          kind: "no_coi",
           severity: "error",
           message: "No certificate of insurance on file.",
         },
@@ -201,6 +202,7 @@ export function evaluateContractCompliance(params: {
       issues: [
         {
           coverage_type: "Other",
+          kind: "no_coi",
           severity: "error",
           message: "No certificate of insurance linked to this contract.",
         },
@@ -240,6 +242,7 @@ function requirementIssues(
     if (!found) {
       issues.push({
         coverage_type: req.coverage_type,
+        kind: "missing",
         severity: "error",
         message: `No ${req.coverage_type} coverage found on any certificate.`,
       });
@@ -250,18 +253,21 @@ function requirementIssues(
     if (status === "expired") {
       issues.push({
         coverage_type: req.coverage_type,
+        kind: "expired",
         severity: "error",
         message: `${req.coverage_type} expired ${formatDate(cov.expiration_date)}.`,
       });
     } else if (status === "expiring_soon") {
       issues.push({
         coverage_type: req.coverage_type,
+        kind: "expiring_soon",
         severity: "warning",
         message: `${req.coverage_type} expires ${formatDate(cov.expiration_date)}.`,
       });
     } else if (status === "unknown") {
       issues.push({
         coverage_type: req.coverage_type,
+        kind: "no_date",
         severity: "warning",
         message: `${req.coverage_type} expiration date not detected, verify manually.`,
       });
@@ -275,12 +281,14 @@ function requirementIssues(
       if (cov.additional_insured === 0) {
         issues.push({
           coverage_type: req.coverage_type,
+          kind: "additional_insured",
           severity: "error",
           message: `${req.coverage_type}: additional insured is required but not indicated.`,
         });
       } else if (cov.additional_insured == null) {
         issues.push({
           coverage_type: req.coverage_type,
+          kind: "additional_insured",
           severity: "warning",
           message: `${req.coverage_type}: additional insured status not detected, verify.`,
         });
@@ -290,12 +298,14 @@ function requirementIssues(
       if (cov.subrogation_waived === 0) {
         issues.push({
           coverage_type: req.coverage_type,
+          kind: "waiver_of_subrogation",
           severity: "error",
           message: `${req.coverage_type}: waiver of subrogation is required but not indicated.`,
         });
       } else if (cov.subrogation_waived == null) {
         issues.push({
           coverage_type: req.coverage_type,
+          kind: "waiver_of_subrogation",
           severity: "warning",
           message: `${req.coverage_type}: waiver of subrogation not detected, verify.`,
         });
@@ -324,6 +334,7 @@ function checkLimit(
   if (value == null) {
     issues.push({
       coverage_type: req.coverage_type,
+      kind: "limit",
       severity: "warning",
       message: `${req.coverage_type}: could not read a ${label} limit to check against ${formatMoney(minimum)}.`,
     });
@@ -332,6 +343,7 @@ function checkLimit(
   if (value < minimum) {
     issues.push({
       coverage_type: req.coverage_type,
+      kind: "limit",
       severity: "error",
       message: `${req.coverage_type}: ${label} limit ${formatMoney(value)} is below the required ${formatMoney(minimum)}.`,
     });
