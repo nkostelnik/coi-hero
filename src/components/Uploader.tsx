@@ -90,7 +90,7 @@ export default function Uploader() {
           upload(Array.from(e.dataTransfer.files));
         }}
         onClick={() => inputRef.current?.click()}
-        className={`grid cursor-pointer place-items-center rounded-xl border-2 border-dashed p-12 text-center transition-colors ${
+        className={`flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed px-4 py-5 text-center transition-colors ${
           dragOver
             ? "border-brand-500 bg-brand-50"
             : "border-slate-300 bg-white hover:border-brand-400"
@@ -107,12 +107,10 @@ export default function Uploader() {
             e.target.value = "";
           }}
         />
-        <p className="text-base font-semibold text-slate-700">
+        <p className="text-sm font-semibold text-slate-700">
           {busy ? "Processing…" : "Drop COI files here, or click to browse"}
         </p>
-        <p className="mt-1 text-sm text-slate-500">
-          PDF, PNG, or JPG · multiple files OK
-        </p>
+        <p className="text-xs text-slate-400">PDF, PNG, or JPG</p>
       </div>
 
       {busy && queued.length > 0 && (

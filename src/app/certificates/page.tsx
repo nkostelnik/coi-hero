@@ -30,17 +30,12 @@ export default async function CertificatesPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Certificates</h1>
-          <p className="text-sm text-slate-500">
-            Every COI on file, flattened and searchable. “Expiring soon” = within{" "}
-            {soonDays} days.
-          </p>
-        </div>
-        <Link href="/upload" className="btn-primary">
-          + Add certificate
-        </Link>
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Certificates</h1>
+        <p className="text-sm text-slate-500">
+          Every COI on file, flattened and searchable. “Expiring soon” = within{" "}
+          {soonDays} days.
+        </p>
       </div>
 
       {certificates.length === 0 ? (
