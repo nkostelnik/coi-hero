@@ -30,6 +30,39 @@ const runtime = (): ClaudeRuntime | null => {
   return c && typeof c.use === "function" ? c : null;
 };
 
+/** True inside a Claude viewer; false on an ordinary website (GitHub Pages). */
+export const inClaude = (): boolean => runtime() !== null;
+
+/**
+ * Offer a file to the viewer: through Claude's downloads capability inside
+ * Claude, or an ordinary browser download on a website.
+ */
+export async function saveFile(
+  filename: string,
+  data: string,
+  type: string,
+): Promise<"saved" | "declined" | "unavailable"> {
+  const dl = await useCapability("downloads");
+  if (dl) {
+    try {
+      await dl.save({ filename, data });
+      return "saved";
+    } catch (e: any) {
+      return e?.code === "declined" ? "declined" : "unavailable";
+    }
+  }
+  if (inClaude()) return "unavailable";
+  const url = URL.createObjectURL(new Blob([data], { type }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  return "saved";
+}
+
 export async function useCapability<T = any>(name: string): Promise<T | null> {
   const c = runtime();
   if (!c) return null;

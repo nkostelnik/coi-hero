@@ -132,6 +132,13 @@ function prompt(source: string): string {
   ].join("\n");
 }
 
+/** Instructions a person can paste into any Claude chat along with a certificate. */
+export function chatInstructions(): string {
+  return prompt(
+    "Read the certificate of insurance attached to this message. Reply with the JSON object in one ```json code block and nothing else.",
+  );
+}
+
 export class ReadError extends Error {
   constructor(public code: string, message: string) {
     super(message);
