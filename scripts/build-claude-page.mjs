@@ -3,7 +3,8 @@
 //
 //   npm run build:claude
 //
-// Output: claude/coi-hero/coi-hero.html and claude/coi-hero-skill.zip
+// Output: claude/coi-hero/coi-hero.html, claude/coi-hero-skill.zip, and the
+// same page as a standalone website for GitHub Pages in docs/index.html.
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -31,6 +32,27 @@ const template = fs.readFileSync(path.join(root, "src/claude-page/template.html"
 const page = template.replace("<!-- APP_SCRIPT -->", () => `<script>${js}</script>`);
 fs.mkdirSync(skillDir, { recursive: true });
 fs.writeFileSync(pageOut, page);
+
+/* GitHub Pages serves the file as-is, so give it the document shell that
+   Claude adds when it publishes the page. */
+const docsDir = path.join(root, "docs");
+const site = [
+  "<!doctype html>",
+  '<html lang="en">',
+  "<head>",
+  '<meta charset="utf-8">',
+  '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">',
+  '<meta name="description" content="COI Hero demo: track certificates of insurance, expirations and compliance gaps in your browser.">',
+  "<style>html,body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>",
+  "</head>",
+  "<body>",
+  page,
+  "</body>",
+  "</html>",
+  "",
+].join("\n");
+fs.writeFileSync(path.join(docsDir, "index.html"), site);
+fs.writeFileSync(path.join(docsDir, ".nojekyll"), "");
 
 /* The extraction rules and format, generated from the shared code so the
    skill's chat instructions always match what the page and server expect. */
@@ -128,3 +150,4 @@ fs.writeFileSync(zipOut, zip(entries));
 const kb = (n) => `${Math.round(n / 1024)} KB`;
 console.log(`Page: ${path.relative(root, pageOut)} (${kb(Buffer.byteLength(page))})`);
 console.log(`Skill: ${path.relative(root, zipOut)} (${entries.map((e) => e.name).join(", ")})`);
+console.log(`Website: docs/index.html (${kb(Buffer.byteLength(site))})`);

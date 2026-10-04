@@ -35,6 +35,7 @@ import {
 } from "./model";
 import type { PageCertificate, PageData } from "./model";
 import {
+  chatInstructions,
   openFile,
   parsePasted,
   readWithClaude,
@@ -43,12 +44,15 @@ import {
   ReadError,
 } from "./reader";
 import type { ReaderSupport } from "./reader";
-import { Store, files, useCapability } from "./store";
+import { Store, files, inClaude, saveFile } from "./store";
 import type { StorageMode } from "./store";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const html = htm.bind(h);
 const REPO_URL = "https://github.com/nkostelnik/coi-hero";
+const CLAUDE_GUIDE_URL = REPO_URL + "#use-it-in-claude";
+/** Running as an ordinary website (GitHub Pages) rather than inside Claude. */
+const WEB = !inClaude();
 
 type Route =
   | { name: "dashboard" | "add" | "certificates" | "vendors" | "digest" | "requirements" | "data" }
@@ -148,6 +152,7 @@ function StorageBanner({ mode }: { mode: StorageMode }) {
   return html`<div class="banner" role="note">
     <strong>Demo</strong>
     <span>${where}</span>
+    ${WEB && html`<a href=${CLAUDE_GUIDE_URL} target="_blank" rel="noreferrer">Have Claude read your certificates</a>`}
     <${Link} to=${{ name: "data" }}>Not for company records</${Link}>
   </div>`;
 }
@@ -158,8 +163,12 @@ function Intro() {
   return html`<section class="card intro" aria-labelledby="intro-h">
     <h2 id="intro-h">How this demo works</h2>
     <ul>
-      <li>Drop in certificates of insurance (PDFs). Your Claude reads them, using your Claude plan. COI Hero never sees your files or data.</li>
-      <li>Records are saved privately for you. The original PDFs stay in this browser.</li>
+      ${WEB
+        ? html`<li>This is the COI Hero demo website. Load the sample data from Your data to look around, or add your own certificates on Add certificates.</li>
+            <li>Everything you add stays in this browser. Nothing is sent to COI Hero.</li>
+            <li>On this website you type in each certificate's details, or have any Claude chat read it for you. To have Claude read certificates automatically, <a href=${CLAUDE_GUIDE_URL} target="_blank" rel="noreferrer">use COI Hero in Claude</a>.</li>`
+        : html`<li>Drop in certificates of insurance (PDFs). Your Claude reads them, using your Claude plan. COI Hero never sees your files or data.</li>
+            <li>Records are saved privately for you. The original PDFs stay in this browser.</li>`}
       <li>This is a demo for trying COI Hero on your own files. It has no backups, team access or audit trail, so don't use it as your company's system of record. To run COI Hero properly, a technical person can set it up from the <a href=${REPO_URL} target="_blank" rel="noreferrer">GitHub project</a>.</li>
     </ul>
     <div class="row">
@@ -281,6 +290,18 @@ function AddCertificates({ support }: { support: ReaderSupport | null }) {
   const [over, setOver] = useState(false);
   const [pasted, setPasted] = useState("");
   const [pasteError, setPasteError] = useState("");
+  const [copied, setCopied] = useState("");
+  const [showInstructions, setShowInstructions] = useState(false);
+
+  function copyInstructions() {
+    const text = chatInstructions();
+    const done = () => setCopied("Copied. Paste it into a Claude chat with the certificate.");
+    try {
+      navigator.clipboard.writeText(text).then(done, () => setShowInstructions(true));
+    } catch {
+      setShowInstructions(true);
+    }
+  }
   const input = useRef<HTMLInputElement>(null);
   const busy = useRef(Promise.resolve());
 
@@ -304,7 +325,10 @@ function AddCertificates({ support }: { support: ReaderSupport | null }) {
       if (!s.claude) {
         cert = { ...cert, extraction_status: "manual" };
         await saveCertificate(cert);
-        update(key, { state: "needs-you", message: "This page can't ask Claude here. Open it to enter the details." });
+        update(key, {
+          state: "needs-you",
+          message: WEB ? "Saved. Open it to type in the details." : "This page can't ask Claude here. Open it to enter the details.",
+        });
         return;
       }
       update(key, { message: "Claude is reading it (usually 10–60 seconds)…" });
@@ -366,7 +390,9 @@ function AddCertificates({ support }: { support: ReaderSupport | null }) {
   const readingNote = !support
     ? "Checking what this page can do…"
     : !support.claude
-      ? "This page can't ask Claude here (open it inside Claude to have certificates read). You can still add files and enter the details yourself."
+      ? WEB
+        ? "On this website Claude can't read files for you. Add a file and type in its details, or have a Claude chat read it (below)."
+        : "This page can't ask Claude here (open it inside Claude to have certificates read). You can still add files and enter the details yourself."
       : support.images
         ? "Claude reads each file, scans and photos included."
         : "Claude reads PDFs that contain text, which is most PDFs a broker sends. Scans and photos can't be read on this page: drop those into your Claude chat instead (see below).";
@@ -425,8 +451,21 @@ function AddCertificates({ support }: { support: ReaderSupport | null }) {
       </ul>`}
     </section>
     <section class="card" aria-labelledby="paste-h">
-      <h2 id="paste-h">Add a scan or photo from your Claude chat</h2>
-      <p class="muted">Drop the scan into your Claude chat and say “Read this COI for COI Hero.” Claude replies with a block of data. Paste it here.</p>
+      <h2 id="paste-h">${WEB ? "Have a Claude chat read a certificate" : "Add a scan or photo from your Claude chat"}</h2>
+      ${WEB
+        ? html`<ol class="steps">
+            <li>Copy the reading instructions.</li>
+            <li>In any Claude chat, attach the certificate (PDF, scan or photo) and paste the instructions.</li>
+            <li>Paste Claude's answer below.</li>
+          </ol>`
+        : html`<p class="muted">Drop the scan into your Claude chat and say “Read this COI for COI Hero.” Claude replies with a block of data. Paste it here. Without the COI Hero skill, copy the reading instructions and paste them in with the scan.</p>`}
+      <div class="row">
+        <button type="button" class="btn ghost" onClick=${copyInstructions}>Copy reading instructions</button>
+        ${copied && html`<span class="small muted" role="status">${copied}</span>`}
+      </div>
+      ${showInstructions &&
+      html`<label class="field"><span>Reading instructions (select all and copy)</span>
+        <textarea id="instructions" rows="6" readonly value=${chatInstructions()}></textarea></label>`}
       <label class="field">
         <span>Data from Claude</span>
         <textarea id="paste-data" rows="5" value=${pasted} onInput=${(e: Event) => setPasted((e.currentTarget as HTMLTextAreaElement).value)} placeholder='{"insured": {"name": …}, "coverages": […]}'></textarea>
@@ -774,16 +813,8 @@ function Digest({ data, certs }: { data: PageData; certs: CertificateWithRelatio
   const gapCount = digest.reduce((n, g) => n + g.gaps.length, 0);
 
   async function download() {
-    const dl = await useCapability("downloads");
-    if (!dl) {
-      toast("Downloads aren't available here.");
-      return;
-    }
-    try {
-      await dl.save({ filename: `coi-hero-digest-${new Date().toISOString().slice(0, 10)}.csv`, data: digestCsv(digest) });
-    } catch (e: any) {
-      if (e?.code !== "declined") toast("The download didn't start. Try again in a moment.");
-    }
+    const r = await saveFile(`coi-hero-digest-${new Date().toISOString().slice(0, 10)}.csv`, digestCsv(digest), "text/csv");
+    if (r === "unavailable") toast("The download didn't start. Try again in a moment.");
   }
 
   return html`<div class="stack">
@@ -934,17 +965,9 @@ function YourData({ data, mode }: { data: PageData; mode: StorageMode }) {
     toast("All your COI Hero data is deleted.");
   }
   async function exportBackup() {
-    const dl = await useCapability("downloads");
-    if (!dl) {
-      toast("Downloads aren't available here.");
-      return;
-    }
     const body = JSON.stringify({ format: "coi-hero-backup", version: 1, exported_at: new Date().toISOString(), data: store.data }, null, 2);
-    try {
-      await dl.save({ filename: `coi-hero-backup-${new Date().toISOString().slice(0, 10)}.json`, data: body });
-    } catch (e: any) {
-      if (e?.code !== "declined") toast("The download didn't start. Try again in a moment.");
-    }
+    const r = await saveFile(`coi-hero-backup-${new Date().toISOString().slice(0, 10)}.json`, body, "application/json");
+    if (r === "unavailable") toast("The download didn't start. Try again in a moment.");
   }
   async function readImport(file: File) {
     try {

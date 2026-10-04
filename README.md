@@ -8,8 +8,9 @@
 
 If you work in a business or a legal team, you are usually the one chasing certificates of insurance (COIs) from vendors and counterparties. They arrive as PDFs in email, get saved to a folder, and are never tagged, checked, or searchable again. COI Hero fixes that. Drop a COI in, and it stores the original, reads the key data off the form, and adds it to one searchable table. It then watches for expirations and checks coverage against the requirements in your contracts.
 
-**Two ways to use it:**
+**Three ways to use it:**
 
+- **Look around in your browser.** The [live demo](https://nkostelnik.github.io/coi-hero/) runs entirely in your browser with sample data. You add certificates by typing in their details, or by having any Claude chat read them. Nothing is sent anywhere.
 - **Try it in Claude.** Install the COI Hero skill and it opens as a page inside Claude. You drag in certificates, and your own Claude reads them. No API key or installation is needed. It's a demo: see [Use it in Claude](#use-it-in-claude).
 - **Run it yourself.** The full app, for a technical person to run on their own machine or servers. See [Run it yourself](#run-it-yourself).
 
@@ -65,7 +66,9 @@ Claude publishes your own private copy of the COI Hero page and reopens the same
 npm run build:claude
 ```
 
-This rewrites `claude/coi-hero/coi-hero.html`, `claude/coi-hero/extraction-format.md` and `claude/coi-hero-skill.zip`. Commit all three.
+This rewrites `claude/coi-hero/coi-hero.html`, `claude/coi-hero/extraction-format.md`, `claude/coi-hero-skill.zip`, and `docs/index.html`, the live demo website. Commit all four.
+
+**The live demo website.** `docs/index.html` is the same page, served by GitHub Pages from the `docs` folder on `master` (Settings → Pages). Outside Claude, the page can't ask Claude to read files. It explains this, and offers typing the details in or copying reading instructions into any Claude chat.
 
 ## Run it yourself
 
@@ -146,7 +149,7 @@ src/
 claude/                 The COI Hero skill for Claude, and its zip
 scripts/                build-claude-page.mjs
 data/                   SQLite database and stored PDFs (git-ignored)
-docs/                   Screenshots and the social preview image
+docs/                   Live demo website (index.html), screenshots and the social preview image
 ```
 
 ## Tech stack
