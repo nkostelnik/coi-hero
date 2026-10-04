@@ -8,6 +8,11 @@
 
 If you work in a business or a legal team, you are usually the one chasing certificates of insurance (COIs) from vendors and counterparties. They arrive as PDFs in email, get saved to a folder, and are never tagged, checked, or searchable again. COI Hero fixes that. Drop a COI in, and it stores the original, reads the key data off the form, and adds it to one searchable table. It then watches for expirations and checks coverage against the requirements in your contracts.
 
+**Two ways to use it:**
+
+- **Try it in Claude.** Install the COI Hero skill and it opens as a page inside Claude. You drag in certificates, and your own Claude reads them. No API key or installation is needed. It's a demo: see [Use it in Claude](#use-it-in-claude).
+- **Run it yourself.** The full app, for a technical person to run on their own machine or servers. See [Run it yourself](#run-it-yourself).
+
 > **Status:** early, local-first prototype. It runs on your own machine with a local SQLite database and has **no authentication**, so do not expose it to the internet. Always confirm extracted values against the original PDF before relying on them. This is a tracking aid, not legal or insurance advice.
 
 ## Screenshots
@@ -32,7 +37,39 @@ If you work in a business or a legal team, you are usually the one chasing certi
 - **Requirements.** Global minimum limits plus per-vendor and per-contract overrides. Coverage that is missing, expired, under-limit, or missing additional-insured or waiver-of-subrogation is flagged.
 - **Demo mode.** Load a realistic sample dataset with one click, and optionally mock extraction so you can try everything without an API key.
 
-## Quick start
+## Use it in Claude
+
+The `claude/` folder holds a Claude skill that runs COI Hero as a page inside Claude, on each person's own Claude account.
+
+**Install the skill**
+
+1. Download [`claude/coi-hero-skill.zip`](claude/coi-hero-skill.zip).
+2. In Claude, open **Settings → Capabilities** and make sure **Code execution and file creation** is on.
+3. Under **Skills**, upload the zip and switch **coi-hero** on.
+4. In a new task, ask Claude to "open COI Hero".
+
+Claude publishes your own private copy of the COI Hero page and reopens the same copy next time.
+
+**How it works**
+
+- **Reading.** Drag COI PDFs onto **Add certificates**. The page pulls the text out of each PDF and asks your Claude to read it, using your Claude plan. COI Hero itself never sees your files.
+- **Scans and photos.** The page can't send pictures to Claude, so it can't read scanned or photographed certificates. Drop those into your Claude chat instead. Claude replies with the certificate's data, which you paste into the page.
+- **Where data is kept.** Records are saved in a private space in your Claude account that only you can see. Original PDFs stay in the browser you added them from. Anyone who opens a shared link without permission to save gets a copy kept in their own browser instead.
+- **Same rules as the app.** The page shows the dashboard, certificates, vendors, digest and requirements, with the same status and compliance rules as the full app.
+
+**It's a demo.** It has no team access, audit trail or automatic backups, and it hasn't had a security review. It's for trying COI Hero on your own certificates, not for a company's system of record. For that, a technical person should [run it yourself](#run-it-yourself).
+
+**Building the page.** The page is built from `src/claude-page/` and the shared code in `src/lib/`. After changing either, run:
+
+```bash
+npm run build:claude
+```
+
+This rewrites `claude/coi-hero/coi-hero.html`, `claude/coi-hero/extraction-format.md` and `claude/coi-hero-skill.zip`. Commit all three.
+
+## Run it yourself
+
+### Quick start
 
 Requires Node.js 20 or newer.
 
@@ -63,6 +100,14 @@ COI_EXTRACT_MODEL=claude-sonnet-5   # optional; use a larger model for messy sca
 
 Restart the dev server after changing `.env.local`. Without a key the app still runs: files are stored and you enter the fields by hand (or add a key later and use **Re-run extraction** on a certificate). Documents you upload are sent to Anthropic for processing, so apply the same judgment you would for any third-party service.
 
+### Before using it with real company data
+
+The app is built to run on one person's machine. Before anyone else relies on it, the person running it needs to add:
+
+- **Sign-in.** The app has no authentication. Never expose it to the internet as it is. At minimum, put it behind something that requires a login, such as your company's single sign-on, Cloudflare Access or Tailscale.
+- **Backups.** Everything lives in `data/`: the SQLite database `data/coi-hero.db` and the original files in `data/files/`. Back up that folder.
+- **A data review.** Every uploaded certificate is sent to Anthropic to be read. Check that this fits your company's rules and your Anthropic account's data settings.
+
 ## How it works
 
 1. Upload stores the original file under `data/files/` and creates a certificate row.
@@ -84,10 +129,13 @@ src/
     upload/             Drag-and-drop ingest
     demo/               Sample-data controls
     api/                certificates, contracts, vendors, requirements, files, digest, demo
+  claude-page/          The COI Hero page for Claude (built into claude/coi-hero)
   components/           UI (tables, editors, uploader)
   lib/
     db.ts               SQLite access, schema, and migrations
-    extract.ts          Anthropic call, normalization, and demo-mode mock
+    extract.ts          Anthropic call and demo-mode mock
+    extractShared.ts    Extraction rules, output format and cleanup (app and Claude page)
+    defaults.ts         Starting requirements and "expiring soon" window
     compliance.ts       Status and requirement evaluation
     digest.ts           Builds the expiration digest from the status and compliance logic
     dates.ts            Loose date parsing and status calculation
@@ -95,6 +143,8 @@ src/
     demoData.ts         Sample vendors, certificates, and contracts
     demoSeed.ts         Builds the sample dataset
     samplePdf.ts        Zero-dependency PDF writer for the sample COIs
+claude/                 The COI Hero skill for Claude, and its zip
+scripts/                build-claude-page.mjs
 data/                   SQLite database and stored PDFs (git-ignored)
 docs/                   Screenshots and the social preview image
 ```
@@ -117,4 +167,4 @@ Your database and uploaded PDFs live in `data/` on your machine and are git-igno
 
 ## License
 
-No license has been chosen yet, so all rights are reserved by default.
+MIT. See [LICENSE](LICENSE). COI Hero is provided as is, with no warranty. It's a tracking aid, not legal or insurance advice.

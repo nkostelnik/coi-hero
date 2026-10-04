@@ -7,7 +7,8 @@
     "dev": "next dev -p 3100",
     "build": "next build",
     "start": "next start -p 3100",
-    "lint": "next lint"
+    "lint": "next lint",
+    "build:claude": "node scripts/build-claude-page.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": ">=0.40.0",
@@ -22,7 +23,10 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "autoprefixer": "^10.4.20",
+    "esbuild": "^0.25.12",
+    "htm": "^3.1.1",
     "postcss": "^8.4.49",
+    "preact": "^10.29.8",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.0"
   }

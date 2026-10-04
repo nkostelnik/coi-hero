@@ -118,7 +118,10 @@ export function seedDemo(): { vendors: number; certificates: number } {
       })),
     });
 
-    const { fileName, size } = storeFile(pdf, spec.original_file_name);
+    const { fileName, size } = storeFile(
+      Buffer.from(pdf, "latin1"),
+      spec.original_file_name,
+    );
     const id = insertCertificate({
       file_name: fileName,
       original_file_name: spec.original_file_name,

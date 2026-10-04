@@ -12,6 +12,7 @@ import type {
   Requirement,
   Vendor,
 } from "./types";
+import { DEFAULT_GLOBAL_REQUIREMENTS, DEFAULT_SOON_DAYS } from "./defaults";
 
 export const DATA_DIR = path.join(process.cwd(), "data");
 export const FILES_DIR = path.join(DATA_DIR, "files");
@@ -130,31 +131,6 @@ CREATE TABLE IF NOT EXISTS settings (
 );
 `;
 
-const DEFAULT_GLOBAL_REQUIREMENTS: Array<Partial<Requirement>> = [
-  {
-    coverage_type: "Commercial General Liability",
-    min_each_occurrence: 1_000_000,
-    min_aggregate: 2_000_000,
-    require_additional_insured: 1,
-    require_waiver_of_subrogation: 0,
-    required: 1,
-  },
-  {
-    coverage_type: "Automobile Liability",
-    min_combined_single_limit: 1_000_000,
-    required: 1,
-  },
-  {
-    coverage_type: "Workers Compensation & Employers Liability",
-    min_each_occurrence: 1_000_000,
-    required: 1,
-  },
-  {
-    coverage_type: "Umbrella / Excess Liability",
-    min_each_occurrence: 5_000_000,
-    required: 0,
-  },
-];
 
 let _db: Database.Database | null =
   (globalThis as { __coiHeroDb?: Database.Database }).__coiHeroDb ?? null;
@@ -224,9 +200,9 @@ function seed(instance: Database.Database) {
     }
     instance
       .prepare(
-        "INSERT OR REPLACE INTO settings (key, value) VALUES ('expiring_soon_days', '30')",
+        "INSERT OR REPLACE INTO settings (key, value) VALUES ('expiring_soon_days', ?)",
       )
-      .run();
+      .run(String(DEFAULT_SOON_DAYS));
     instance
       .prepare(
         "INSERT OR REPLACE INTO settings (key, value) VALUES ('seeded', '1')",
@@ -255,7 +231,7 @@ export function setSetting(key: string, value: string): void {
 
 export function getSoonDays(): number {
   const n = Number(getSetting("expiring_soon_days"));
-  return Number.isFinite(n) && n > 0 ? n : 30;
+  return Number.isFinite(n) && n > 0 ? n : DEFAULT_SOON_DAYS;
 }
 
 /* ----------------------------- vendors ----------------------------- */
