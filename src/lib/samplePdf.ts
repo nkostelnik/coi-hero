@@ -1,5 +1,3 @@
-import "server-only";
-
 /**
  * Tiny zero-dependency PDF writer: one page, Helvetica, left-aligned lines.
  * Enough to produce readable stand-in "certificate" PDFs for the demo data so
@@ -21,7 +19,12 @@ export interface PdfLine {
   gapBefore?: number;
 }
 
-export function renderTextPdf(lines: PdfLine[]): Buffer {
+/**
+ * The PDF as a string of single-byte characters. Every byte is printable
+ * ASCII or a newline (escapePdfText strips the rest), so string length is the
+ * byte length and the writer runs anywhere, including in a browser.
+ */
+export function renderTextPdf(lines: PdfLine[]): string {
   const left = 56;
   const top = 760;
   const leading = 15;
@@ -45,7 +48,7 @@ export function renderTextPdf(lines: PdfLine[]): Buffer {
   ops.push("ET");
 
   const content = ops.join("\n");
-  const contentLen = Buffer.byteLength(content, "latin1");
+  const contentLen = content.length;
 
   const objects = [
     "<< /Type /Catalog /Pages 2 0 R >>",
@@ -59,11 +62,11 @@ export function renderTextPdf(lines: PdfLine[]): Buffer {
   let pdf = "%PDF-1.4\n";
   const offsets: number[] = [];
   objects.forEach((body, i) => {
-    offsets[i] = Buffer.byteLength(pdf, "latin1");
+    offsets[i] = pdf.length;
     pdf += `${i + 1} 0 obj\n${body}\nendobj\n`;
   });
 
-  const xrefStart = Buffer.byteLength(pdf, "latin1");
+  const xrefStart = pdf.length;
   pdf += `xref\n0 ${objects.length + 1}\n`;
   pdf += "0000000000 65535 f \n";
   for (const off of offsets) {
@@ -73,7 +76,7 @@ export function renderTextPdf(lines: PdfLine[]): Buffer {
     `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\n` +
     `startxref\n${xrefStart}\n%%EOF`;
 
-  return Buffer.from(pdf, "latin1");
+  return pdf;
 }
 
 export interface SampleCertPdfInput {
@@ -94,7 +97,7 @@ export interface SampleCertPdfInput {
   }>;
 }
 
-export function renderCertificatePdf(input: SampleCertPdfInput): Buffer {
+export function renderCertificatePdf(input: SampleCertPdfInput): string {
   const lines: PdfLine[] = [
     { text: "CERTIFICATE OF LIABILITY INSURANCE", size: 15 },
     {

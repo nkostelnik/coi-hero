@@ -1,0 +1,551 @@
+<title>COI Hero</title>
+<style>
+/* Layout: app header with section tabs, a demo/storage strip, then one column of cards (max 1100px).
+   Palette and type follow the server app: brand blue on slate, system UI font. */
+:root {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --sunken: #f1f5f9;
+  --fg: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --accent: #2247d9;
+  --accent-soft: #eef4ff;
+  --accent-fg: #ffffff;
+  --red: #b91c1c;   --red-soft: #fee2e2;
+  --amber: #a16207; --amber-soft: #fef3c7;
+  --green: #047857; --green-soft: #d1fae5;
+  --grey: #475569;  --grey-soft: #f1f5f9;
+  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0b1120; --surface: #111a2e; --sunken: #0e1628; --fg: #e2e8f0; --muted: #94a3b8; --line: #1f2b44;
+  --accent: #7b9cff; --accent-soft: #18244a; --accent-fg: #0b1120;
+  --red: #fca5a5; --red-soft: #3b1418; --amber: #fcd34d; --amber-soft: #3a2a0c;
+  --green: #6ee7b7; --green-soft: #0c3326; --grey: #cbd5e1; --grey-soft: #1e293b;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0b1120; --surface: #111a2e; --sunken: #0e1628; --fg: #e2e8f0; --muted: #94a3b8; --line: #1f2b44;
+  --accent: #7b9cff; --accent-soft: #18244a; --accent-fg: #0b1120;
+  --red: #fca5a5; --red-soft: #3b1418; --amber: #fcd34d; --amber-soft: #3a2a0c;
+  --green: #6ee7b7; --green-soft: #0c3326; --grey: #cbd5e1; --grey-soft: #1e293b;
+  color-scheme: dark; }
+
+body { background: var(--bg); color: var(--fg); font: 14px/1.5 var(--sans); }
+* { box-sizing: border-box; }
+h1 { font-size: 24px; line-height: 1.25; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+h2 { font-size: 15px; margin: 0 0 8px; }
+.h3 { font-size: 15px; margin: 0; }
+h3.label, .label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 12px 0 4px; }
+p { margin: 0; }
+a { color: var(--accent); }
+.muted { color: var(--muted); }
+.small { font-size: 12px; }
+.strong { font-weight: 600; }
+.mono { font-family: var(--mono); font-size: 12.5px; }
+.num { font-variant-numeric: tabular-nums; }
+.center { text-align: center; }
+.wrap { overflow-wrap: anywhere; min-width: 0; }
+.grow { flex: 1; }
+.t-red { color: var(--red); } .t-amber { color: var(--amber); }
+
+.app { min-height: 100%; }
+.top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; padding-block: 10px; padding-inline: 16px; background: var(--surface); border-bottom: 1px solid var(--line); }
+.brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 16px; }
+.mark { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 7px; background: var(--accent); color: var(--accent-fg); font-weight: 900; }
+.tabs { display: flex; gap: 2px; overflow-x: auto; max-width: 100%; }
+.tab { font: inherit; font-weight: 500; color: var(--muted); background: none; border: 0; border-radius: 6px; padding: 6px 10px; cursor: pointer; white-space: nowrap; }
+.tab:hover { background: var(--sunken); color: var(--fg); }
+.tab.on { background: var(--accent-soft); color: var(--accent); }
+.banner { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; padding-block: 8px; padding-inline: 16px; background: var(--amber-soft); color: var(--fg); font-size: 13px; border-bottom: 1px solid var(--line); }
+.banner strong { color: var(--amber); text-transform: uppercase; letter-spacing: .06em; font-size: 11px; }
+main { max-width: 1100px; margin: 0 auto; padding-block: 24px 64px; padding-inline: 16px; }
+.stack { display: grid; gap: 16px; }
+.pagehead { display: grid; gap: 4px; }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.row.center { justify-content: center; }
+.row.tight { gap: 6px; flex-wrap: nowrap; }
+.spread { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+.wraprow { flex-wrap: wrap; align-items: flex-end; }
+.sechead { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.sechead h2 { margin: 0; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; min-width: 0; }
+.card.flush { padding: 0; }
+.card.empty { text-align: center; display: grid; gap: 8px; padding: 32px 16px; }
+.intro ul { margin: 0 0 12px; padding-left: 18px; display: grid; gap: 6px; max-width: 75ch; }
+.prose p + p { margin-top: 8px; }
+.prose p { max-width: 75ch; }
+.notice { background: var(--amber-soft); border-radius: 8px; padding: 10px 12px; }
+.error { color: var(--red); margin-top: 6px; }
+.confirm { display: inline-flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+.btn { font: inherit; font-weight: 600; font-size: 13px; padding: 7px 12px; border-radius: 7px; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-fg); cursor: pointer; }
+.btn.ghost { background: transparent; color: var(--accent); border-color: var(--line); }
+.btn.ghost:hover { background: var(--sunken); }
+.btn.small { padding: 4px 9px; font-size: 12px; }
+.btn.danger { background: var(--red); border-color: var(--red); color: var(--surface); }
+.danger-text { color: var(--red) !important; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+button:focus-visible, .drop:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.linkish { font: inherit; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; text-align: left; }
+.linkish:hover { text-decoration: underline; }
+
+.badge, .pill { display: inline-flex; align-items: center; border-radius: 999px; padding: 1px 8px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.s-expired, .p-red { background: var(--red-soft); color: var(--red); }
+.s-expiring_soon, .p-amber { background: var(--amber-soft); color: var(--amber); }
+.s-active, .p-green { background: var(--green-soft); color: var(--green); }
+.s-unknown, .p-grey { background: var(--grey-soft); color: var(--grey); }
+.p-blue { background: var(--accent-soft); color: var(--accent); }
+
+.review-bar { display: flex; align-items: center; gap: 14px; text-align: left; font: inherit; color: var(--fg); background: var(--accent-soft); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 16px; cursor: pointer; }
+.review-bar .count { display: grid; place-items: center; min-width: 44px; height: 44px; border-radius: 9px; background: var(--accent); color: var(--accent-fg); font-size: 20px; font-weight: 700; }
+.columns { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.col { background: var(--surface); border: 1px solid var(--line); border-top-width: 4px; border-radius: var(--radius); min-width: 0; }
+.c-red { border-top-color: var(--red); } .c-amber { border-top-color: var(--amber); } .c-green { border-top-color: var(--green); }
+.colhead { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; font-weight: 600; border-bottom: 1px solid var(--line); }
+.colcount { font-variant-numeric: tabular-nums; font-weight: 700; }
+.collist { list-style: none; margin: 0; padding: 0; max-height: 26rem; overflow-y: auto; }
+.collist li { padding: 9px 14px; border-bottom: 1px solid var(--line); }
+.collist li:last-child { border-bottom: 0; }
+
+.list { list-style: none; margin: 0; padding: 0; }
+.list > li { padding: 9px 0; border-bottom: 1px solid var(--line); }
+.list > li:last-child { border-bottom: 0; }
+.list.cards { display: grid; gap: 12px; }
+.list.cards > li { border: 1px solid var(--line); padding: 14px 16px; display: grid; gap: 6px; }
+.issues { margin: 2px 0 4px; padding-left: 18px; font-size: 13px; }
+.issues .error { color: var(--red); } .issues .warning { color: var(--amber); }
+.queue { margin-top: 12px; }
+.queue .q-done strong::before { content: "✓ "; color: var(--green); }
+.queue .q-failed, .queue .q-needs-you { color: var(--fg); }
+.queue .q-failed .small { color: var(--red); } .queue .q-needs-you .small { color: var(--amber); }
+
+.drop { display: grid; gap: 4px; place-items: center; text-align: center; padding: 36px 16px; border: 2px dashed var(--line); border-radius: var(--radius); background: var(--sunken); cursor: pointer; }
+.drop strong { color: var(--accent); font-size: 15px; }
+.drop.over { border-color: var(--accent); background: var(--accent-soft); }
+
+.filters { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: flex-end; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font: inherit; font-size: 12.5px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
+.chip.on { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+
+.field { display: grid; gap: 4px; min-width: 0; }
+.field > span { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.field.inline { min-width: 180px; }
+input[type="text"], input[type="search"], input[type="number"], input[type="date"], select, textarea {
+  font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 7px; padding: 7px 9px; width: 100%; min-width: 0; }
+textarea { resize: vertical; }
+input.short { width: 90px; }
+.check { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 14px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 14px; }
+.grid2.tight { gap: 10px; }
+.card > .field, .card > .grid2 + .field { margin-top: 10px; }
+.coverage, .rule { border-top: 1px solid var(--line); padding-top: 14px; margin-top: 14px; display: grid; gap: 10px; }
+.coverage:first-of-type, .rule:first-of-type { border-top: 0; margin-top: 0; padding-top: 4px; }
+.limits { display: grid; gap: 6px; }
+.limitrow { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto; gap: 6px; }
+.limits > .btn { justify-self: start; }
+
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th { text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 10px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tbody tr:last-child td { border-bottom: 0; }
+td.num { white-space: nowrap; }
+
+.pdfbox { display: grid; gap: 12px; background: var(--sunken); }
+.pdf-page { width: 100%; max-width: 820px; height: auto; margin: 0 auto; border: 1px solid var(--line); background: #fff; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); max-width: min(560px, calc(100% - 32px)); background: var(--fg); color: var(--bg); padding: 10px 14px; border-radius: 8px; font-size: 13px; box-shadow: 0 6px 20px rgba(0,0,0,.2); }
+
+@media (max-width: 800px) {
+  .columns, .grid3 { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 520px) {
+  .grid2 { grid-template-columns: minmax(0, 1fr); }
+  h1 { font-size: 21px; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div id="app"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+<script>if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";</script>
+<script>"use strict";(()=>{var Pn=Object.defineProperty;var Ln=(e,t,n)=>t in e?Pn(e,t,{enumerable:!0,configurable:!0,writable:!0,value:n}):e[t]=n;var F=(e,t,n)=>Ln(e,typeof t!="symbol"?t+"":t,n);var xe,S,At,An,K,Et,It,Tt,Je,he,se,Ot,Ze,Qe,Xe,In,Ce={},we=[],Tn=/acit|ex(?:s|g|n|p|$)|rph|grid|ows|mnc|ntw|ine[ch]|zoo|^ord|itera/i,ke=Array.isArray;function V(e,t){for(var n in t)e[n]=t[n];return e}function et(e){e&&e.parentNode&&e.parentNode.removeChild(e)}function tt(e,t,n){var r,a,i,s={};for(i in t)i=="key"?r=t[i]:i=="ref"?a=t[i]:s[i]=t[i];if(arguments.length>2&&(s.children=arguments.length>3?xe.call(arguments,2):n),typeof e=="function"&&e.defaultProps!=null)for(i in e.defaultProps)s[i]===void 0&&(s[i]=e.defaultProps[i]);return ye(e,s,r,a,null)}function ye(e,t,n,r,a){var i={type:e,props:t,key:n,ref:r,__k:null,__:null,__b:0,__e:null,__c:null,constructor:void 0,__v:a??++At,__i:-1,__u:0};return a==null&&S.vnode!=null&&S.vnode(i),i}function Se(e){return e.children}function be(e,t){this.props=e,this.context=t}function ee(e,t){if(t==null)return e.__?ee(e.__,e.__i+1):null;for(var n;t<e.__k.length;t++)if((n=e.__k[t])!=null&&n.__e!=null)return n.__e;return typeof e.type=="function"?ee(e):null}function On(e){if(e.__P&&e.__d){var t=e.__v,n=t.__e,r=[],a=[],i=V({},t);i.__v=t.__v+1,S.vnode&&S.vnode(i),nt(e.__P,i,t,e.__n,e.__P.namespaceURI,32&t.__u?[n]:null,r,n??ee(t),!!(32&t.__u),a),i.__v=t.__v,i.__.__k[i.__i]=i,Ht(r,i,a),t.__e=t.__=null,i.__e!=n&&qt(i)}}function qt(e){if((e=e.__)!=null&&e.__c!=null)return e.__e=e.__c.base=null,e.__k.some(function(t){if(t!=null&&t.__e!=null)return e.__e=e.__c.base=t.__e}),qt(e)}function Rt(e){(!e.__d&&(e.__d=!0)&&K.push(e)&&!$e.__r++||Et!=S.debounceRendering)&&((Et=S.debounceRendering)||It)($e)}function $e(){try{for(var e,t=1;K.length;)K.length>t&&K.sort(Tt),e=K.shift(),t=K.length,On(e)}finally{K.length=$e.__r=0}}function Nt(e,t,n,r,a,i,s,c,d,o,u){var _,l,p,v,C,f,g=r&&r.__k||we,y=t.length;for(d=qn(n,t,g,d,y),_=0;_<y;_++)(p=n.__k[_])!=null&&(l=p.__i!=-1&&g[p.__i]||Ce,p.__i=_,f=nt(e,p,l,a,i,s,c,d,o,u),v=p.__e,p.ref&&l.ref!=p.ref&&(l.ref&&rt(l.ref,null,p),u.push(p.ref,p.__c||v,p)),C==null&&v!=null&&(C=v),4&p.__u?(d=Mt(p,d,e),l.__e&&(l.__e=null)):typeof p.type=="function"&&f!==void 0?d=f:v&&(d=v.nextSibling),p.__u&=-7);return n.__e=C,d}function qn(e,t,n,r,a){var i,s,c,d,o,u=n.length,_=u,l=0;for(e.__k=new Array(a),i=0;i<a;i++)(s=t[i])!=null&&typeof s!="boolean"&&typeof s!="function"?(typeof s=="string"||typeof s=="number"||typeof s=="bigint"||s.constructor==String?s=e.__k[i]=ye(null,s,null,null,null):ke(s)?s=e.__k[i]=ye(Se,{children:s},null,null,null):s.constructor===void 0&&s.__b>0?s=e.__k[i]=ye(s.type,s.props,s.key,s.ref?s.ref:null,s.__v):e.__k[i]=s,d=i+l,s.__=e,s.__b=e.__b+1,c=null,(o=s.__i=Nn(s,n,d,_))!=-1&&(_--,(c=n[o])&&(c.__u|=2)),c==null||c.__v==null?(o==-1&&(a>u?l--:a<u&&l++),typeof s.type!="function"&&(s.__u|=4)):o!=d&&(o==d-1?l--:o==d+1?l++:(o>d?l--:l++,s.__u|=4))):e.__k[i]=null;if(_)for(i=0;i<u;i++)(c=n[i])!=null&&(2&c.__u)==0&&(c.__e==r&&(r=ee(c)),Wt(c,c));return r}function Mt(e,t,n){var r,a;if(typeof e.type=="function"){for(r=e.__k,a=0;r&&a<r.length;a++)r[a]&&(r[a].__=e,t=Mt(r[a],t,n));return t}e.__e!=t&&(t&&e.type&&!t.parentNode&&(t=ee(e)),t=n.insertBefore(e.__e,t||null));do t=t&&t.nextSibling;while(t!=null&&t.nodeType==8);return t}function Nn(e,t,n,r){var a,i,s,c=e.key,d=e.type,o=t[n],u=o!=null&&(2&o.__u)==0;if(o===null&&c==null||u&&c==o.key&&d==o.type)return n;if(r>(u?1:0)){for(a=n-1,i=n+1;a>=0||i<t.length;)if((o=t[s=a>=0?a--:i++])!=null&&(2&o.__u)==0&&c==o.key&&d==o.type)return s}return-1}function Pt(e,t,n){t[0]=="-"?e.setProperty(t,n??""):e[t]=n==null?"":typeof n!="number"||Tn.test(t)?n:n+"px"}function ve(e,t,n,r,a){var i,s;e:if(t=="style")if(typeof n=="string")e.style.cssText=n;else{if(typeof r=="string"&&(e.style.cssText=r=""),r)for(t in r)n&&t in n||Pt(e.style,t,"");if(n)for(t in n)r&&n[t]==r[t]||Pt(e.style,t,n[t])}else if(t[0]=="o"&&t[1]=="n")i=t!=(t=t.replace(Ot,"$1")),s=t.toLowerCase(),t=s in e||t=="onFocusOut"||t=="onFocusIn"?s.slice(2):t.slice(2),e.l||(e.l={}),e.l[t+i]=n,n?r?n[se]=r[se]:(n[se]=Ze,e.addEventListener(t,i?Xe:Qe,i)):e.removeEventListener(t,i?Xe:Qe,i);else{if(a=="http://www.w3.org/2000/svg")t=t.replace(/xlink(H|:h)/,"h").replace(/sName$/,"s");else if(t!="width"&&t!="height"&&t!="href"&&t!="list"&&t!="form"&&t!="tabIndex"&&t!="download"&&t!="rowSpan"&&t!="colSpan"&&t!="role"&&t!="popover"&&t in e)try{e[t]=n??"";break e}catch{}typeof n=="function"||(n==null||n===!1&&t[4]!="-"?e.removeAttribute(t):e.setAttribute(t,t=="popover"&&n==1?"":n))}}function Lt(e){return function(t){if(this.l){var n=this.l[t.type+e];if(t[he]==null)t[he]=Ze++;else if(t[he]<n[se])return;return n(S.event?S.event(t):t)}}}function nt(e,t,n,r,a,i,s,c,d,o){var u,_,l,p,v,C,f,g,y,b,D,O,q,re,h,x,w=t.type;if(t.constructor!==void 0)return null;128&n.__u&&(d=!!(32&n.__u),i=[c=t.__e=n.__e]),(u=S.__b)&&u(t);e:if(typeof w=="function"){_=s.length;try{if(y=t.props,b=w.prototype&&w.prototype.render,D=(u=w.contextType)&&r[u.__c],O=u?D?D.props.value:u.__:r,n.__c?g=(l=t.__c=n.__c).__=l.__E:(b?t.__c=l=new w(y,O):(t.__c=l=new be(y,O),l.constructor=w,l.render=Bn),D&&D.sub(l),l.state||(l.state={}),l.__n=r,p=l.__d=!0,l.__h=[],l._sb=[]),b&&l.__s==null&&(l.__s=l.state),b&&w.getDerivedStateFromProps!=null&&(l.__s==l.state&&(l.__s=V({},l.__s)),V(l.__s,w.getDerivedStateFromProps(y,l.__s))),v=l.props,C=l.state,l.__v=t,p)b&&w.getDerivedStateFromProps==null&&l.componentWillMount!=null&&l.componentWillMount(),b&&l.componentDidMount!=null&&l.__h.push(l.componentDidMount);else{if(b&&w.getDerivedStateFromProps==null&&y!==v&&l.componentWillReceiveProps!=null&&l.componentWillReceiveProps(y,O),t.__v==n.__v||!l.__e&&l.shouldComponentUpdate!=null&&l.shouldComponentUpdate(y,l.__s,O)===!1){t.__v!=n.__v&&(l.props=y,l.state=l.__s,l.__d=!1),t.__e=n.__e,t.__k=n.__k,t.__k.some(function(T){T&&(T.__=t)}),we.push.apply(l.__h,l._sb),l._sb=[],l.__h.length&&s.push(l),c=ee(n);break e}l.componentWillUpdate!=null&&l.componentWillUpdate(y,l.__s,O),b&&l.componentDidUpdate!=null&&l.__h.push(function(){l.componentDidUpdate(v,C,f)})}if(l.context=O,l.props=y,l.__P=e,l.__e=!1,q=S.__r,re=0,b)l.state=l.__s,l.__d=!1,q&&q(t),u=l.render(l.props,l.state,l.context),we.push.apply(l.__h,l._sb),l._sb=[];else do l.__d=!1,q&&q(t),u=l.render(l.props,l.state,l.context),l.state=l.__s;while(l.__d&&++re<25);l.state=l.__s,l.getChildContext!=null&&(r=V(V({},r),l.getChildContext())),b&&!p&&l.getSnapshotBeforeUpdate!=null&&(f=l.getSnapshotBeforeUpdate(v,C)),h=u!=null&&u.type===Se&&u.key==null?Ft(u.props.children):u,c=Nt(e,ke(h)?h:[h],t,n,r,a,i,s,c,d,o),l.base=t.__e,t.__u&=-161,l.__h.length&&s.push(l),g&&(l.__E=l.__=null)}catch(T){if(s.length=_,t.__v=null,d||i!=null){if(T.then){for(t.__u|=d?160:128;c&&c.nodeType==8&&c.nextSibling;)c=c.nextSibling;i!=null&&(i[i.indexOf(c)]=null),t.__e=c}else if(i!=null)for(x=i.length;x--;)et(i[x])}else t.__e=n.__e;t.__k==null&&(t.__k=n.__k||[]),T.then||Bt(t),S.__e(T,t,n)}}else i==null&&t.__v==n.__v?(t.__k=n.__k,t.__e=n.__e):c=t.__e=Mn(n.__e,t,n,r,a,i,s,d,o);return(u=S.diffed)&&u(t),128&t.__u?void 0:c}function Bt(e){e&&(e.__c&&(e.__c.__e=!0),e.__k&&e.__k.some(Bt))}function Ht(e,t,n){for(var r=0;r<n.length;r++)rt(n[r],n[++r],n[++r]);S.__c&&S.__c(t,e),e.some(function(a){try{e=a.__h,a.__h=[],e.some(function(i){i.call(a)})}catch(i){S.__e(i,a.__v)}})}function Ft(e){return typeof e!="object"||e==null||e.__b>0?e:ke(e)?e.map(Ft):e.constructor!==void 0?null:V({},e)}function Mn(e,t,n,r,a,i,s,c,d){var o,u,_,l,p,v,C,f=n.props||Ce,g=t.props,y=t.type;if(y=="svg"?a="http://www.w3.org/2000/svg":y=="math"?a="http://www.w3.org/1998/Math/MathML":a||(a="http://www.w3.org/1999/xhtml"),i!=null){for(o=0;o<i.length;o++)if((p=i[o])&&"setAttribute"in p==!!y&&(y?p.localName==y:p.nodeType==3)){e=p,i[o]=null;break}}if(e==null){if(y==null)return document.createTextNode(g);e=document.createElementNS(a,y,g.is&&g),c&&(S.__m&&S.__m(t,i),c=!1),i=null}if(y==null)f===g||c&&e.data==g||(e.data=g);else{if(i=y=="textarea"&&g.defaultValue!=null?null:i&&xe.call(e.childNodes),!c&&i!=null)for(f={},o=0;o<e.attributes.length;o++)f[(p=e.attributes[o]).name]=p.value;for(o in f)p=f[o],o=="dangerouslySetInnerHTML"?_=p:o=="children"||o in g||o=="value"&&"defaultValue"in g||o=="checked"&&"defaultChecked"in g||ve(e,o,null,p,a);for(o in g)p=g[o],o=="children"?l=p:o=="dangerouslySetInnerHTML"?u=p:o=="value"?v=p:o=="checked"?C=p:c&&typeof p!="function"||f[o]===p||ve(e,o,p,f[o],a);if(u)c||_&&(u.__html==_.__html||u.__html==e.innerHTML)||(e.innerHTML=u.__html),t.__k=[];else if(_&&(e.innerHTML=""),Nt(t.type=="template"?e.content:e,ke(l)?l:[l],t,n,r,y=="foreignObject"?"http://www.w3.org/1999/xhtml":a,i,s,i?i[0]:n.__k&&ee(n,0),c,d),i!=null)for(o=i.length;o--;)et(i[o]);c&&y!="textarea"||(o="value",y=="progress"&&v==null?e.removeAttribute("value"):v!=null&&(v!==e[o]||y=="progress"&&!v||y=="option"&&v!=f[o])&&ve(e,o,v,f[o],a),o="checked",C!=null&&C!=e[o]&&ve(e,o,C,f[o],a))}return e}function rt(e,t,n){try{if(typeof e=="function"){var r=typeof e.__u=="function";r&&e.__u(),r&&t==null||(e.__u=e(t))}else e.current=t}catch(a){S.__e(a,n)}}function Wt(e,t,n){var r,a;if(S.unmount&&S.unmount(e),(r=e.ref)&&(r.current&&r.current!=e.__e||rt(r,null,t)),(r=e.__c)!=null){if(r.componentWillUnmount)try{r.componentWillUnmount()}catch(i){S.__e(i,t)}r.base=r.__P=r.__n=null}if(r=e.__k)for(a=0;a<r.length;a++)r[a]&&Wt(r[a],t,n||typeof e.type!="function");n||et(e.__e),e.__c=e.__=e.__e=void 0}function Bn(e,t,n){return this.constructor(e,n)}function jt(e,t,n){var r,a,i,s;t==document&&(t=document.documentElement),S.__&&S.__(e,t),a=(r=typeof n=="function")?null:n&&n.__k||t.__k,i=[],s=[],nt(t,e=(!r&&n||t).__k=tt(Se,null,[e]),a||Ce,Ce,t.namespaceURI,!r&&n?[n]:a?null:t.firstChild?xe.call(t.childNodes):null,i,!r&&n?n:a?a.__e:t.firstChild,r,s),Ht(i,e,s),e.props.children=null}xe=we.slice,S={__e:function(e,t,n,r){for(var a,i,s;t=t.__;)if((a=t.__c)&&!a.__)try{if((i=a.constructor)&&i.getDerivedStateFromError!=null&&(a.setState(i.getDerivedStateFromError(e)),s=a.__d),a.componentDidCatch!=null&&(a.componentDidCatch(e,r||{}),s=a.__d),s)return a.__E=a}catch(c){e=c}throw e}},At=0,An=function(e){return e!=null&&e.constructor===void 0},be.prototype.setState=function(e,t){var n;n=this.__s!=null&&this.__s!=this.state?this.__s:this.__s=V({},this.state),typeof e=="function"&&(e=e(V({},n),this.props)),e&&V(n,e),e!=null&&this.__v&&(t&&this._sb.push(t),Rt(this))},be.prototype.forceUpdate=function(e){this.__v&&(this.__e=!0,e&&this.__h.push(e),Rt(this))},be.prototype.render=Se,K=[],It=typeof Promise=="function"?Promise.prototype.then.bind(Promise.resolve()):setTimeout,Tt=function(e,t){return e.__v.__b-t.__v.__b},$e.__r=0,Je=Math.random().toString(8),he="__d"+Je,se="__a"+Je,Ot=/(PointerCapture)$|Capture$/i,Ze=0,Qe=Lt(!1),Xe=Lt(!0),In=0;var le,R,at,Vt,Ee=0,Xt=[],P=S,Ut=P.__b,Gt=P.__r,Kt=P.diffed,Yt=P.__c,zt=P.unmount,Jt=P.__;function ot(e,t){P.__h&&P.__h(R,e,Ee||t),Ee=0;var n=R.__H||(R.__H={__:[],__h:[]});return e>=n.__.length&&n.__.push({}),n.__[e]}function k(e){return Ee=1,Hn(en,e)}function Hn(e,t,n){var r=ot(le++,2);if(r.t=e,!r.__c&&(r.__=[n?n(t):en(void 0,t),function(c){var d=r.__N?r.__N[0]:r.__[0],o=r.t(d,c);d!==o&&(r.__N=[o,r.__[1]],r.__c.setState({}))}],r.__c=R,!R.__f)){var a=function(c,d,o){if(!r.__c.__H)return!0;var u=!1,_=r.__c.props!==c;if(r.__c.__H.__.some(function(p){if(p.__N){u=!0;var v=p.__[0];p.__=p.__N,p.__N=void 0,v!==p.__[0]&&(_=!0)}}),i){var l=i.call(this,c,d,o);return u?l||_:l}return!u||_};R.__f=!0;var i=R.shouldComponentUpdate,s=R.componentWillUpdate;R.componentWillUpdate=function(c,d,o){if(this.__e){var u=i;i=void 0,a(c,d,o),i=u}s&&s.call(this,c,d,o)},R.shouldComponentUpdate=a}return r.__N||r.__}function st(e,t){var n=ot(le++,3);!P.__s&&Zt(n.__H,t)&&(n.__=e,n.u=t,R.__H.__h.push(n))}function ce(e){return Ee=5,Re(function(){return{current:e}},[])}function Re(e,t){var n=ot(le++,7);return Zt(n.__H,t)&&(n.__=e(),n.__H=t,n.__h=e),n.__}function Fn(){for(var e;e=Xt.shift();){var t=e.__H;if(e.__P&&t)try{t.__h.some(De),t.__h.some(it),t.__h=[]}catch(n){t.__h=[],P.__e(n,e.__v)}}}P.__b=function(e){R=null,Ut&&Ut(e)},P.__=function(e,t){e&&t.__k&&t.__k.__m&&(e.__m=t.__k.__m),Jt&&Jt(e,t)},P.__r=function(e){Gt&&Gt(e),le=0;var t=(R=e.__c).__H;t&&(at===R?(t.__h=[],R.__h=[],t.__.some(function(n){n.__N&&(n.__=n.__N),n.u=n.__N=void 0})):(t.__h.some(De),t.__h.some(it),t.__h=[],le=0)),at=R},P.diffed=function(e){Kt&&Kt(e);var t=e.__c;t&&t.__H&&(t.__H.__h.length&&(Xt.push(t)!==1&&Vt===P.requestAnimationFrame||((Vt=P.requestAnimationFrame)||Wn)(Fn)),t.__H.__.some(function(n){n.u&&(n.__H=n.u,n.u=void 0)})),at=R=null},P.__c=function(e,t){t.some(function(n){try{n.__h.some(De),n.__h=n.__h.filter(function(r){return!r.__||it(r)})}catch(r){t.some(function(a){a.__h&&(a.__h=[])}),t=[],P.__e(r,n.__v)}}),Yt&&Yt(e,t)},P.unmount=function(e){zt&&zt(e);var t,n=e.__c;n&&n.__H&&(n.__H.__.some(function(r){try{De(r)}catch(a){t=a}}),n.__H=void 0,t&&P.__e(t,n.__v))};var Qt=typeof requestAnimationFrame=="function";function Wn(e){var t,n=function(){clearTimeout(r),Qt&&cancelAnimationFrame(t),setTimeout(e)},r=setTimeout(n,35);Qt&&(t=requestAnimationFrame(n))}function De(e){var t=R,n=e.__c;typeof n=="function"&&(e.__c=void 0,n()),R=t}function it(e){var t=R;e.__c=e.__(),R=t}function Zt(e,t){return!e||e.length!==t.length||t.some(function(n,r){return n!==e[r]})}function en(e,t){return typeof t=="function"?t(e):t}var nn=function(e,t,n,r){var a;t[0]=0;for(var i=1;i<t.length;i++){var s=t[i++],c=t[i]?(t[0]|=s?1:2,n[t[i++]]):t[++i];s===3?r[0]=c:s===4?r[1]=Object.assign(r[1]||{},c):s===5?(r[1]=r[1]||{})[t[++i]]=c:s===6?r[1][t[++i]]+=c+"":s?(a=e.apply(c,nn(e,c,n,["",null])),r.push(a),c[0]?t[0]|=2:(t[i-2]=0,t[i]=a)):r.push(c)}return r},tn=new Map;function rn(e){var t=tn.get(this);return t||(t=new Map,tn.set(this,t)),(t=nn(this,t.get(e)||(t.set(e,t=(function(n){for(var r,a,i=1,s="",c="",d=[0],o=function(l){i===1&&(l||(s=s.replace(/^\s*\n\s*|\s*\n\s*$/g,"")))?d.push(0,l,s):i===3&&(l||s)?(d.push(3,l,s),i=2):i===2&&s==="..."&&l?d.push(4,l,0):i===2&&s&&!l?d.push(5,0,!0,s):i>=5&&((s||!l&&i===5)&&(d.push(i,0,s,a),i=6),l&&(d.push(i,l,0,a),i=6)),s=""},u=0;u<n.length;u++){u&&(i===1&&o(),o(u));for(var _=0;_<n[u].length;_++)r=n[u][_],i===1?r==="<"?(o(),d=[d],i=3):s+=r:i===4?s==="--"&&r===">"?(i=1,s=""):s=r+s[0]:c?r===c?c="":s+=r:r==='"'||r==="'"?c=r:r===">"?(o(),i=1):i&&(r==="="?(i=5,a=s,s=""):r==="/"&&(i<5||n[u][_+1]===">")?(o(),i===3&&(d=d[0]),i=d,(d=d[0]).push(2,0,i),i=0):r===" "||r==="	"||r===`
+`||r==="\r"?(o(),i=2):s+=r),i===3&&s==="!--"&&(i=4,d=d[0])}return o(),d})(e)),t),arguments,[])).length>1?t:t[0]}function Pe(e){if(!e)return null;let t=String(e).trim();if(!t)return null;let n=t.match(/^(\d{4})-(\d{2})-(\d{2})/);if(n)return`${n[1]}-${n[2]}-${n[3]}`;let r=t.match(/^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{2,4})$/);if(r){let[,i,s,c]=r,d=Number(c);d<100&&(d+=d>=70?1900:2e3);let o=String(Number(i)).padStart(2,"0"),u=String(Number(s)).padStart(2,"0");if(Number(o)>=1&&Number(o)<=12&&Number(u)>=1&&Number(u)<=31)return`${d}-${o}-${u}`}let a=new Date(t);return Number.isNaN(a.getTime())?null:a.toISOString().slice(0,10)}function lt(){return new Date().toISOString().slice(0,10)}function ct(e,t){let n=Date.parse(e+"T00:00:00Z"),r=Date.parse(t+"T00:00:00Z");return Math.round((r-n)/864e5)}function Y(e,t,n=lt()){if(!e)return"unknown";let r=ct(n,e);return r<0?"expired":r<=t?"expiring_soon":"active"}function z(e){if(!e)return"-";let[t,n,r]=e.split("-");return!t||!n||!r?e:`${n}/${r}/${t}`}function ue(e){return e==null||!Number.isFinite(e)?"-":e>=1e6&&e%1e6===0?`$${e/1e6}M`:e>=1e3&&e%1e3===0?`$${(e/1e3).toLocaleString()}K`:`$${e.toLocaleString()}`}function dt(e){if(!e.length)return null;let t=Le(e,"each_occurrence")??Le(e,"csl")??Le(e,"aggregate");if(t)return t;let n=e.filter(r=>typeof r.amount=="number");return n.length?n.reduce((r,a)=>(a.amount??0)>(r.amount??0)?a:r):e[0]}function Le(e,t){let n={each_occurrence:[/each occurrence/i,/per occurrence/i,/\bel each accident\b/i,/bodily injury.*accident/i],aggregate:[/aggregate/i],csl:[/combined single limit/i,/\bcsl\b/i]};for(let r of n[t]){let a=e.find(i=>r.test(i.label??""));if(a&&typeof a.amount=="number")return a}return null}function _t(e){let t=new Map;for(let n of e)for(let r of n.coverages){let a=t.get(r.coverage_type);if(!a){t.set(r.coverage_type,{coverage:r,certificate:n});continue}let i=a.coverage.expiration_date??"";(r.expiration_date??"")>i&&t.set(r.coverage_type,{coverage:r,certificate:n})}return t}function jn(e,t){let n=e.filter(i=>i.scope==="global"),r=t?e.filter(i=>i.scope==="vendor"&&i.vendor_id===t):[],a=new Map;for(let i of n)a.set(i.coverage_type,i);for(let i of r)a.set(i.coverage_type,i);return[...a.values()]}function de(e){let{vendorId:t,certs:n,requirements:r,soonDays:a,today:i}=e,s=jn(r,t).filter(_=>_.required),d=!!t&&r.some(_=>_.scope==="vendor"&&_.vendor_id===t)?"vendor":s.length?"global":"none";if(n.length===0)return{vendor_id:t??0,status:"no_coi",issues:[{coverage_type:"Other",kind:"no_coi",severity:"error",message:"No certificate of insurance on file."}],evaluated_against:d};if(s.length===0)return{vendor_id:t??0,status:"unknown",issues:[],evaluated_against:"none"};let o=Vn(_t(n),s,a,i),u=o.some(_=>_.severity==="error")?"non_compliant":"compliant";return{vendor_id:t??0,status:u,issues:o,evaluated_against:d}}function Vn(e,t,n,r){let a=[];for(let i of t){let s=e.get(i.coverage_type);if(!s){a.push({coverage_type:i.coverage_type,kind:"missing",severity:"error",message:`No ${i.coverage_type} coverage found on any certificate.`});continue}let c=s.coverage,d=Y(c.expiration_date,n,r);d==="expired"?a.push({coverage_type:i.coverage_type,kind:"expired",severity:"error",message:`${i.coverage_type} expired ${z(c.expiration_date)}.`}):d==="expiring_soon"?a.push({coverage_type:i.coverage_type,kind:"expiring_soon",severity:"warning",message:`${i.coverage_type} expires ${z(c.expiration_date)}.`}):d==="unknown"&&a.push({coverage_type:i.coverage_type,kind:"no_date",severity:"warning",message:`${i.coverage_type} expiration date not detected, verify manually.`}),ut(a,i,c,"each_occurrence",i.min_each_occurrence),ut(a,i,c,"aggregate",i.min_aggregate),ut(a,i,c,"csl",i.min_combined_single_limit),i.require_additional_insured&&(c.additional_insured===0?a.push({coverage_type:i.coverage_type,kind:"additional_insured",severity:"error",message:`${i.coverage_type}: additional insured is required but not indicated.`}):c.additional_insured==null&&a.push({coverage_type:i.coverage_type,kind:"additional_insured",severity:"warning",message:`${i.coverage_type}: additional insured status not detected, verify.`})),i.require_waiver_of_subrogation&&(c.subrogation_waived===0?a.push({coverage_type:i.coverage_type,kind:"waiver_of_subrogation",severity:"error",message:`${i.coverage_type}: waiver of subrogation is required but not indicated.`}):c.subrogation_waived==null&&a.push({coverage_type:i.coverage_type,kind:"waiver_of_subrogation",severity:"warning",message:`${i.coverage_type}: waiver of subrogation not detected, verify.`}))}return a}function ut(e,t,n,r,a){if(a==null)return;let i=r==="each_occurrence"?"each-occurrence":r==="aggregate"?"aggregate":"combined single",c=Le(n.limits,r)?.amount??dt(n.limits)?.amount??null;if(c==null){e.push({coverage_type:t.coverage_type,kind:"limit",severity:"warning",message:`${t.coverage_type}: could not read a ${i} limit to check against ${ue(a)}.`});return}c<a&&e.push({coverage_type:t.coverage_type,kind:"limit",severity:"error",message:`${t.coverage_type}: ${i} limit ${ue(c)} is below the required ${ue(a)}.`})}var Un=new Set(["no_coi","missing","limit","additional_insured","waiver_of_subrogation"]);function on(e){let{certs:t,vendors:n,requirements:r,soonDays:a}=e,i=e.today??lt(),s=new Map;for(let o of t){let u=s.get(o.vendor_id)??[];u.push(o),s.set(o.vendor_id,u)}let c=[],d=[...n];s.has(null)&&d.push(null);for(let o of d){let u=s.get(o?.id??null)??[],_=[];for(let p of u)for(let v of p.coverages){let C=Y(v.expiration_date,a,i);C!=="expired"&&C!=="expiring_soon"||_.push({certificate:p,coverage:v,status:C,days:ct(i,v.expiration_date)})}_.sort((p,v)=>p.days-v.days);let l=[];if(o){let p=_t(u);l=de({vendorId:o.id,certs:u,requirements:r,soonDays:a,today:i}).issues.filter(v=>Un.has(v.kind)).map(v=>({issue:v,certificate:v.kind==="no_coi"||v.kind==="missing"?null:p.get(v.coverage_type)?.certificate??null}))}!_.length&&!l.length||c.push({vendor:o,name:o?.name??"Unassigned certificates",lines:_,gaps:l,earliestExpiration:_[0]?.coverage.expiration_date??null})}return c.sort((o,u)=>o.earliestExpiration&&u.earliestExpiration?o.earliestExpiration.localeCompare(u.earliestExpiration)||o.name.localeCompare(u.name):o.earliestExpiration?-1:u.earliestExpiration?1:o.name.localeCompare(u.name))}function pt(e){if(e===0)return"Expires today";let t=Math.abs(e),n=t===1?"day":"days";return e>0?`${t} ${n} left`:`${t} ${n} ago`}var Gn=["vendor","item","coverage_type","status","expiration_date","days_remaining","when","carrier","policy_number","detail","certificate_id","certificate_url"];function an(e){if(e==null)return"";let t=String(e);return/[",\n]/.test(t)?`"${t.replace(/"/g,'""')}"`:t}function sn(e,t=()=>""){let n=[Gn.join(",")];for(let r of e){for(let{certificate:a,coverage:i,status:s,days:c}of r.lines)n.push([r.name,"coverage",i.coverage_type,s,i.expiration_date,c,pt(c),i.insurer_name,i.policy_number,"",a.id,t(a.id)].map(an).join(","));for(let{issue:a,certificate:i}of r.gaps)n.push([r.name,"compliance_gap",a.kind==="no_coi"?"":a.coverage_type,a.severity==="error"?a.kind:`verify_${a.kind}`,"","","","","",a.message,i?.id??"",i?t(i.id):""].map(an).join(","))}return n.join(`\r
+`)}var ae=["Commercial General Liability","Automobile Liability","Umbrella / Excess Liability","Workers Compensation & Employers Liability","Professional Liability / E&O","Cyber Liability","Pollution / Environmental Liability","Property","Other"];var ln=[{coverage_type:"Commercial General Liability",min_each_occurrence:1e6,min_aggregate:2e6,require_additional_insured:1,require_waiver_of_subrogation:0,required:1},{coverage_type:"Automobile Liability",min_combined_single_limit:1e6,required:1},{coverage_type:"Workers Compensation & Employers Liability",min_each_occurrence:1e6,required:1},{coverage_type:"Umbrella / Excess Liability",min_each_occurrence:5e6,required:0}];var M="Meridian Property Group",B="400 Market Street, Suite 1200, San Francisco, CA 94105",H=e=>({coverage_type:"Commercial General Liability",eff_offset:e.exp_offset-365,limits:[{label:"Each Occurrence",amount:1e6},{label:"General Aggregate",amount:2e6},{label:"Products-Comp/Op Agg",amount:2e6},{label:"Personal & Adv Injury",amount:1e6}],additional_insured:!0,subrogation_waived:!0,primary_noncontributory:!0,notice_of_cancellation_days:30,...e}),U=e=>({coverage_type:"Automobile Liability",eff_offset:e.exp_offset-365,limits:[{label:"Combined Single Limit",amount:1e6}],additional_insured:!0,subrogation_waived:!0,...e}),J=e=>({coverage_type:"Workers Compensation & Employers Liability",eff_offset:e.exp_offset-365,limits:[{label:"EL Each Accident",amount:1e6},{label:"EL Disease - Each Employee",amount:1e6},{label:"EL Disease - Policy Limit",amount:1e6}],subrogation_waived:!0,...e}),cn=[{vendor:"Skyline Steel Erectors",aliases:["Skyline Steel Erectors, Inc."],producer:"Marsh McLennan Agency",insured_name:"Skyline Steel Erectors, Inc.",insured_address:"1877 Industrial Pkwy, Oakland, CA 94607",holder:M,holder_address:B,cert_date_offset:-40,date_received_offset:-39,contract_reference:"MSA-2025-088 / Tower B structural steel",internal_owner:"J. Rivera (Construction PM)",description:"General Liability includes blanket additional insured and primary & non-contributory wording per endorsement CG2010/CG2037. Waiver of subrogation applies. Umbrella follows form.",reviewed:!0,original_file_name:"Skyline-Steel-COI-2025.pdf",coverages:[H({carrier:"Travelers",policy_number:"6809K221144",exp_offset:300,per_project_aggregate:!0}),U({carrier:"Travelers",policy_number:"BA-6809K221145",exp_offset:300}),J({carrier:"Travelers",policy_number:"UB-6809K221146",exp_offset:300})]},{vendor:"Copperline Electric Co.",producer:"HUB International",insured_name:"Copperline Electric Co.",insured_address:"55 Wattage Way, San Jose, CA 95112",holder:M,holder_address:B,cert_date_offset:-330,date_received_offset:-328,contract_reference:"PO-4471 / Lobby lighting retrofit",internal_owner:"D. Okafor (Facilities)",reviewed:!0,original_file_name:"Copperline-Electric-COI.pdf",coverages:[H({carrier:"The Hartford",policy_number:"21SBAAB1234",exp_offset:18}),U({carrier:"The Hartford",policy_number:"21UENAB5678",exp_offset:120}),J({carrier:"The Hartford",policy_number:"21WECAB9012",exp_offset:120})]},{vendor:"Delta Mechanical Services",producer:"Gallagher",insured_name:"Delta Mechanical Services LLC",insured_address:"9 Boiler Rd, Fremont, CA 94538",holder:M,holder_address:B,cert_date_offset:-380,date_received_offset:-377,contract_reference:"MSA-2024-031 / HVAC maintenance",internal_owner:"D. Okafor (Facilities)",description:"Certificate provided for annual HVAC preventive-maintenance agreement. No automobile schedule attached.",reviewed:!0,original_file_name:"Delta-Mechanical-COI-2024.pdf",coverages:[H({carrier:"Liberty Mutual",policy_number:"TB2-641-004512-014",exp_offset:-15}),J({carrier:"Liberty Mutual",policy_number:"WA7-64D-004512-024",exp_offset:210})]},{vendor:"Harbor Point Landscaping",producer:"Brown & Brown",insured_name:"Harbor Point Landscaping & Grounds",insured_address:"12 Meadow Ln, San Rafael, CA 94901",holder:M,holder_address:B,cert_date_offset:-110,date_received_offset:-108,contract_reference:"PO-5120 / Grounds keeping",internal_owner:"M. Chen (Property Mgmt)",reviewed:!0,original_file_name:"HarborPoint-Landscaping-COI.pdf",coverages:[H({carrier:"Nationwide",policy_number:"ACP-GL-7781203",exp_offset:250,limits:[{label:"Each Occurrence",amount:5e5},{label:"General Aggregate",amount:1e6}],primary_noncontributory:!1}),U({carrier:"Nationwide",policy_number:"ACP-BA-7781204",exp_offset:250})]},{vendor:"Ironclad Security Services",producer:"Lockton Companies",insured_name:"Ironclad Security Services, Inc.",insured_address:"700 Sentinel Blvd, San Francisco, CA 94103",holder:M,holder_address:B,cert_date_offset:-400,date_received_offset:-398,contract_reference:"MSA-2023-014 / Site security",internal_owner:"P. Nowak (Security)",description:"SUPERSEDED. Retained for history. Replaced by 2025 renewal certificate.",reviewed:!0,original_file_name:"Ironclad-Security-COI-2024.pdf",coverages:[H({carrier:"CNA",policy_number:"6041288371",exp_offset:-35}),U({carrier:"CNA",policy_number:"6041288372",exp_offset:-35}),J({carrier:"CNA",policy_number:"6041288373",exp_offset:-35})]},{vendor:"Ironclad Security Services",producer:"Lockton Companies",insured_name:"Ironclad Security Services, Inc.",insured_address:"700 Sentinel Blvd, San Francisco, CA 94103",holder:M,holder_address:B,cert_date_offset:-25,date_received_offset:-24,contract_reference:"MSA-2023-014 / Site security (2025 renewal)",internal_owner:"P. Nowak (Security)",description:"2025 renewal. Blanket additional insured and waiver of subrogation in favor of the certificate holder. Umbrella is follow-form over GL, Auto and Employers Liability.",reviewed:!0,original_file_name:"Ironclad-Security-COI-2025.pdf",coverages:[H({carrier:"Chubb",policy_number:"3599-72-14 GL",exp_offset:330,per_project_aggregate:!0}),U({carrier:"Chubb",policy_number:"7359-21-88 CA",exp_offset:330}),J({carrier:"Chubb",policy_number:"7160-05-42 WC",exp_offset:330}),{coverage_type:"Umbrella / Excess Liability",carrier:"Chubb",policy_number:"9977-31-05 XS",eff_offset:-35,exp_offset:330,limits:[{label:"Each Occurrence",amount:5e6},{label:"Aggregate",amount:5e6}],additional_insured:!0}]},{vendor:"Nimbus IT Consultants",producer:"Woodruff Sawyer",insured_name:"Nimbus IT Consultants LLC",insured_address:"88 Cloud Ave, Palo Alto, CA 94301",holder:M,holder_address:B,cert_date_offset:-60,date_received_offset:-58,contract_reference:"SOW-2025-201 / ERP integration",internal_owner:"R. Patel (IT)",description:"Professional services engagement. Technology E&O and Cyber Liability written on a claims-made basis. General Liability includes the holder as additional insured.",reviewed:!0,original_file_name:"Nimbus-IT-COI.pdf",coverages:[H({carrier:"Hiscox",policy_number:"UDC-2211887-24",exp_offset:280,per_project_aggregate:!1}),{coverage_type:"Professional Liability / E&O",carrier:"Hiscox",policy_number:"MPL-5541902-24",eff_offset:-85,exp_offset:280,limits:[{label:"Each Claim",amount:2e6},{label:"Aggregate",amount:2e6}]},{coverage_type:"Cyber Liability",carrier:"Beazley",policy_number:"W312A5-24",eff_offset:-85,exp_offset:280,limits:[{label:"Aggregate Limit",amount:3e6}]}]},{vendor:"Riverside Freight Lines",producer:"AON Risk Services",insured_name:"Riverside Freight Lines Inc.",insured_address:"2400 Dock St, Richmond, CA 94804",holder:M,holder_address:B,cert_date_offset:-150,date_received_offset:-148,contract_reference:"MSA-2025-066 / Inbound freight",internal_owner:"L. Gomez (Logistics)",reviewed:!0,original_file_name:"Riverside-Freight-COI.pdf",coverages:[U({carrier:"Zurich American",policy_number:"BAP-9981245-03",exp_offset:200,limits:[{label:"Combined Single Limit",amount:1e6}],primary_noncontributory:!0}),H({carrier:"Zurich American",policy_number:"GLO-9981245-01",exp_offset:200}),J({carrier:"Zurich American",policy_number:"WC-9981245-04",exp_offset:200})]},{vendor:"Apex Roofing & Waterproofing",producer:"USI Insurance Services",insured_name:"Apex Roofing & Waterproofing Co.",insured_address:"31 Shingle Ct, Hayward, CA 94544",holder:M,holder_address:B,cert_date_offset:-420,date_received_offset:-418,contract_reference:"PO-3980 / Roof replacement Bldg C",internal_owner:"J. Rivera (Construction PM)",description:"Roofing contractor. NOTE: all lines lapsed; renewal certificate requested from broker.",reviewed:!0,original_file_name:"Apex-Roofing-COI-2024.pdf",coverages:[H({carrier:"AmTrust",policy_number:"GLP-2299104",exp_offset:-60}),U({carrier:"AmTrust",policy_number:"CAP-2299105",exp_offset:-60}),J({carrier:"AmTrust",policy_number:"WCP-2299106",exp_offset:-60})]},{vendor:"Greenfield Environmental",producer:"Alliant Insurance",insured_name:"Greenfield Environmental Remediation LLC",insured_address:"14 Aquifer Rd, Vallejo, CA 94590",holder:M,holder_address:B,cert_date_offset:-70,date_received_offset:-68,contract_reference:"SOW-2025-140 / Soil remediation, parking level",internal_owner:"M. Chen (Property Mgmt)",description:"Contractors pollution liability provided for environmental remediation scope. No owned autos; employees use personal vehicles.",reviewed:!0,original_file_name:"Greenfield-Environmental-COI.pdf",coverages:[H({carrier:"Great American",policy_number:"PAC-7781-55",exp_offset:90}),{coverage_type:"Pollution / Environmental Liability",carrier:"Great American",policy_number:"CPL-7781-56",eff_offset:-275,exp_offset:90,limits:[{label:"Each Occurrence",amount:2e6},{label:"Aggregate",amount:4e6}],additional_insured:!0}]},{vendor:"Boreal HVAC",producer:"The Hartford Agency",insured_name:"Boreal HVAC & Controls Inc.",insured_address:"6 Chiller Way, Concord, CA 94520",holder:M,holder_address:B,cert_date_offset:-10,date_received_offset:-9,contract_reference:"MSA-2025-102 / Chiller plant service",internal_owner:"D. Okafor (Facilities)",reviewed:!1,original_file_name:"Boreal-HVAC-COI-new.pdf",coverages:[H({carrier:"Berkshire Hathaway GUARD",policy_number:"GLABX338201",exp_offset:310}),U({carrier:"Berkshire Hathaway GUARD",policy_number:"BABX338202",exp_offset:310}),J({carrier:"Berkshire Hathaway GUARD",policy_number:"WCBX338203",exp_offset:310})]},{vendor:null,producer:"Travelers Independent Agency",insured_name:"Weathervane Contracting LLC",insured_address:"205 Gable St, Berkeley, CA 94710",holder:M,holder_address:B,cert_date_offset:-6,date_received_offset:-5,internal_owner:"unassigned, needs triage",reviewed:!1,original_file_name:"scan_0192.pdf",coverages:[H({carrier:"Travelers",policy_number:"6810H55921",exp_offset:150}),U({carrier:"Travelers",policy_number:"BA-6810H55922",exp_offset:150})]}],un=[{vendor:"Nimbus IT Consultants",coverage_type:"Commercial General Liability",min_each_occurrence:1e6,min_aggregate:2e6,require_additional_insured:!0},{vendor:"Nimbus IT Consultants",coverage_type:"Professional Liability / E&O",min_each_occurrence:2e6},{vendor:"Nimbus IT Consultants",coverage_type:"Cyber Liability",min_each_occurrence:1e6}];function Kn(e){return e.replace(/\\/g,"\\\\").replace(/\(/g,"\\(").replace(/\)/g,"\\)").replace(/[^\x20-\x7E]/g," ")}function Yn(e){let a=760,i=10,s=["BT",`/F1 ${i} Tf`,`56 ${a} Td`];for(let p of e){let v=p.size??10,f=-(15+(p.gapBefore??0));a+=f,s.push(`0 ${f} Td`),v!==i&&(s.push(`/F1 ${v} Tf`),i=v),s.push(`(${Kn(p.text)}) Tj`)}s.push("ET");let c=s.join(`
+`),o=["<< /Type /Catalog /Pages 2 0 R >>","<< /Type /Pages /Kids [3 0 R] /Count 1 >>","<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>",`<< /Length ${c.length} >>
+stream
+${c}
+endstream`,"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>"],u=`%PDF-1.4
+`,_=[];o.forEach((p,v)=>{_[v]=u.length,u+=`${v+1} 0 obj
+${p}
+endobj
+`});let l=u.length;u+=`xref
+0 ${o.length+1}
+`,u+=`0000000000 65535 f 
+`;for(let p of _)u+=`${String(p).padStart(10,"0")} 00000 n 
+`;return u+=`trailer
+<< /Size ${o.length+1} /Root 1 0 R >>
+startxref
+${l}
+%%EOF`,u}function dn(e){let t=[{text:"CERTIFICATE OF LIABILITY INSURANCE",size:15},{text:"SAMPLE / DEMO DOCUMENT - not a real certificate",size:8,gapBefore:2},{text:`DATE (MM/DD/YYYY): ${e.certificateDate}`,gapBefore:6},{text:"This certificate is issued as a matter of information only and confers no rights upon the holder.",size:8},{text:`PRODUCER:  ${e.producer}`,gapBefore:10},{text:`INSURED:   ${e.insured}`},{text:`CERTIFICATE HOLDER:  ${e.holder}`},{text:"COVERAGES",size:12,gapBefore:12}];if(e.coverages.forEach((n,r)=>{t.push({text:`${r+1}. ${n.label}`,size:11,gapBefore:8}),t.push({text:`   Carrier: ${n.carrier}`}),t.push({text:`   Policy #: ${n.policyNumber}`}),t.push({text:`   Effective: ${n.effective}    Expiration: ${n.expiration}`}),t.push({text:`   ADDL INSD: ${n.addlInsured?"Y":"N"}    SUBR WVD: ${n.subrWaived?"Y":"N"}`});for(let a of n.limits)t.push({text:`   ${a.label}: ${a.amount}`})}),e.description){t.push({text:"DESCRIPTION OF OPERATIONS",size:11,gapBefore:12});for(let n of zn(e.description,92))t.push({text:n})}return Yn(t)}function zn(e,t){let n=e.split(/\s+/),r=[],a="";for(let i of n)(a+" "+i).trim().length>t?(a&&r.push(a),a=i):a=(a+" "+i).trim();return a&&r.push(a),r}var N=()=>({vendors:[],certificates:[],requirements:[],settings:{soonDays:30}}),Ae=0;function Te(){let e=Date.now()*100+Math.floor(Math.random()*100);return Ae=e>Ae?e:Ae+1,Ae}var Oe=()=>new Date().toISOString(),Qn=()=>new Date().toISOString().slice(0,10);function Ie(e){let t=new Date;return t.setUTCHours(0,0,0,0),t.setUTCDate(t.getUTCDate()+e),t.toISOString().slice(0,10)}function qe(e,t=[]){return{id:Te(),name:e.trim(),aliases:t,contact_name:null,contact_email:null,notes:null,update_requested_on:null,created_at:Oe()}}function Ne(e){let t=Oe();return{id:Te(),vendor_id:null,file_name:e.original_file_name,file_size:null,content_type:null,source:"upload",source_meta:null,certificate_date:null,producer_name:null,producer_contact:null,producer_phone:null,producer_email:null,insured_name:null,insured_address:null,certificate_holder_name:null,certificate_holder_address:null,description_of_operations:null,contract_reference:null,internal_owner:null,date_received:Qn(),insurers:[],raw_extraction_json:null,extraction_status:"pending",extraction_error:null,extraction_model:null,reviewed:0,notes:null,created_at:t,updated_at:t,coverages:[],has_file:!1,...e}}function Me(e,t={}){return{id:Te(),certificate_id:e,coverage_type:"Commercial General Liability",coverage_type_raw:null,insurer_name:null,insurer_letter:null,naic:null,policy_number:null,effective_date:null,expiration_date:null,additional_insured:null,subrogation_waived:null,primary_noncontributory:null,per_project_aggregate:null,notice_of_cancellation_days:null,limits:[],sort_order:0,...t}}function Be(e){return{id:Te(),scope:"global",vendor_id:null,contract_id:null,min_each_occurrence:null,min_aggregate:null,min_combined_single_limit:null,require_additional_insured:0,require_waiver_of_subrogation:0,required:1,notes:null,created_at:Oe(),...e}}function He(){return ln.map(e=>Be({coverage_type:e.coverage_type,min_each_occurrence:e.min_each_occurrence??null,min_aggregate:e.min_aggregate??null,min_combined_single_limit:e.min_combined_single_limit??null,require_additional_insured:e.require_additional_insured??0,require_waiver_of_subrogation:e.require_waiver_of_subrogation??0,required:e.required??1}))}var Q=e=>e==null?null:e?1:0;function Fe(e,t){let n=t.trim().toLowerCase();return n?e.find(r=>r.name.trim().toLowerCase()===n)??e.find(r=>r.aliases.some(a=>a.trim().toLowerCase()===n))??null:null}function We(e,t,n){return{...e,certificate_date:t.certificate_date,producer_name:t.producer.name,producer_contact:t.producer.contact_name,producer_phone:t.producer.phone,producer_email:t.producer.email,insured_name:t.insured.name,insured_address:t.insured.address,certificate_holder_name:t.certificate_holder.name,certificate_holder_address:t.certificate_holder.address,description_of_operations:t.description_of_operations,insurers:t.insurers,notes:t.notes,extraction_status:"ok",extraction_error:null,extraction_model:n,reviewed:0,updated_at:Oe(),coverages:t.coverages.map((r,a)=>Me(e.id,{coverage_type:r.coverage_type,coverage_type_raw:r.coverage_type_raw,insurer_letter:r.insurer_letter,insurer_name:r.insurer_name,policy_number:r.policy_number,effective_date:r.effective_date,expiration_date:r.expiration_date,additional_insured:Q(r.additional_insured),subrogation_waived:Q(r.subrogation_waived),primary_noncontributory:Q(r.primary_noncontributory),per_project_aggregate:Q(r.per_project_aggregate),notice_of_cancellation_days:r.notice_of_cancellation_days,limits:r.limits,sort_order:a}))}}function pn(e){let t=new Map(e.vendors.map(n=>[n.id,n]));return e.certificates.map(n=>({...n,vendor:n.vendor_id!=null?t.get(n.vendor_id)??null:null,contracts:[]}))}function mt(e){let[t,n,r]=e.split("-");return`${n}/${r}/${t}`}var _n=e=>`$${e.toLocaleString("en-US")}`;function mn(){let e=N();e.settings.initialized=!0,e.requirements=He();let t=new Map,n=(r,a)=>{let i=Fe(e.vendors,r);return i||(i=qe(r,a??[]),e.vendors.push(i)),i};for(let r of cn){let a=Ie(r.cert_date_offset),i=r.vendor?n(r.vendor,r.aliases):null,s=[...new Set(r.coverages.map(u=>u.carrier))],c=Ne({original_file_name:r.original_file_name,content_type:"application/pdf",vendor_id:i?.id??null,certificate_date:a,producer_name:r.producer,insured_name:r.insured_name,insured_address:r.insured_address,certificate_holder_name:r.holder,certificate_holder_address:r.holder_address,description_of_operations:r.description??null,contract_reference:r.contract_reference??null,internal_owner:r.internal_owner??null,date_received:Ie(r.date_received_offset),insurers:s.map((u,_)=>({letter:String.fromCharCode(65+_),name:u,naic:null})),extraction_status:"ok",extraction_model:"sample",reviewed:r.reviewed?1:0,notes:"Sample data: a generated example, not a real certificate.",has_file:!0});c.coverages=r.coverages.map((u,_)=>Me(c.id,{coverage_type:u.coverage_type,insurer_name:u.carrier,policy_number:u.policy_number,effective_date:Ie(u.eff_offset),expiration_date:Ie(u.exp_offset),additional_insured:Q(u.additional_insured),subrogation_waived:Q(u.subrogation_waived),primary_noncontributory:Q(u.primary_noncontributory),per_project_aggregate:Q(u.per_project_aggregate),notice_of_cancellation_days:u.notice_of_cancellation_days??null,limits:u.limits.map(l=>({label:l.label,amount:l.amount,amount_raw:_n(l.amount)})),sort_order:_})),e.certificates.push(c);let d=dn({certificateDate:mt(a),producer:r.producer,insured:`${r.insured_name}, ${r.insured_address}`,holder:`${r.holder}, ${r.holder_address}`,description:r.description??null,coverages:c.coverages.map((u,_)=>({label:u.coverage_type,carrier:u.insurer_name??"",policyNumber:u.policy_number??"",effective:mt(u.effective_date),expiration:mt(u.expiration_date),limits:r.coverages[_].limits.map(l=>({label:l.label,amount:_n(l.amount)})),addlInsured:!!r.coverages[_].additional_insured,subrWaived:!!r.coverages[_].subrogation_waived}))}),o=new Uint8Array(d.length);for(let u=0;u<d.length;u++)o[u]=d.charCodeAt(u);t.set(c.id,o)}for(let r of un)e.requirements.push(Be({scope:"vendor",vendor_id:n(r.vendor).id,coverage_type:r.coverage_type,min_each_occurrence:r.min_each_occurrence??null,min_aggregate:r.min_aggregate??null,require_additional_insured:r.require_additional_insured?1:0,required:r.required===!1?0:1,notes:"Sample data"}));return{data:e,files:t}}var fn=`You read Certificates of Insurance (COIs), most often the ACORD 25 "Certificate of Liability Insurance" form, and return their data as structured fields.
+
+Rules:
+- Transcribe only what the document shows. Do not infer or fill gaps. Use null for anything not present or not legible.
+- Dates: return as YYYY-MM-DD.
+- Money limits: return the numeric value with no symbols or commas (1000000, not "$1,000,000"). Keep the printed text in amount_raw.
+- One entry in "coverages" per coverage line shown on the form (GENERAL LIABILITY, AUTOMOBILE LIABILITY, UMBRELLA/EXCESS, WORKERS COMPENSATION, and any others such as professional, cyber, pollution, property).
+- additional_insured / subrogation_waived: true only if the row's ADDL INSD / SUBR WVD box is clearly marked yes; false if clearly marked no; null if blank or unclear.
+- primary_noncontributory: true if the Description of Operations / endorsements state this coverage is primary and non-contributory; false if explicitly not; null if not mentioned.
+- per_project_aggregate: true if a "per project" or "per location" aggregate endorsement is indicated for that coverage; null if not mentioned.
+- notice_of_cancellation_days: the number of days' notice of cancellation stated for that coverage / the certificate (e.g. 30); null if only the ACORD boilerplate is present.
+- Put anything notable (expired policy, handwritten edits, "see attached", non-standard form) in "notes".`,gn={type:"object",properties:{certificate_date:{type:["string","null"],description:"The date the certificate was issued (top right of ACORD 25)."},producer:{type:"object",properties:{name:{type:["string","null"]},contact_name:{type:["string","null"]},phone:{type:["string","null"]},email:{type:["string","null"]},address:{type:["string","null"]}}},insured:{type:"object",properties:{name:{type:["string","null"]},address:{type:["string","null"]}}},certificate_holder:{type:"object",properties:{name:{type:["string","null"]},address:{type:["string","null"]}}},description_of_operations:{type:["string","null"]},insurers:{type:"array",items:{type:"object",properties:{letter:{type:["string","null"],description:"INSURER A / B / C ... label"},name:{type:["string","null"]},naic:{type:["string","null"]}}}},coverages:{type:"array",items:{type:"object",properties:{coverage_type:{type:"string",description:"One of: "+ae.join(", ")+". Use 'Other' if none fit."},coverage_type_raw:{type:["string","null"],description:"The coverage label exactly as printed."},insurer_letter:{type:["string","null"]},insurer_name:{type:["string","null"]},policy_number:{type:["string","null"]},effective_date:{type:["string","null"]},expiration_date:{type:["string","null"]},additional_insured:{type:["boolean","null"]},subrogation_waived:{type:["boolean","null"]},primary_noncontributory:{type:["boolean","null"]},per_project_aggregate:{type:["boolean","null"]},notice_of_cancellation_days:{type:["number","null"]},limits:{type:"array",items:{type:"object",properties:{label:{type:"string",description:"e.g. 'Each Occurrence', 'General Aggregate', 'Combined Single Limit', 'EL Each Accident'"},amount:{type:["number","null"]},amount_raw:{type:["string","null"]}},required:["label"]}}},required:["coverage_type"]}},notes:{type:["string","null"]}},required:["coverages"]};function Xn(e){let t=String(e??"").toLowerCase();return ae.includes(String(e))?e:/pollution|environmental/.test(t)?"Pollution / Environmental Liability":/cyber|privacy|data breach/.test(t)?"Cyber Liability":/professional|errors|omissions|e&o|e & o|malpractice/.test(t)?"Professional Liability / E&O":/umbrella|excess/.test(t)?"Umbrella / Excess Liability":/workers.?comp|workman|employers.? liability|\bwc\b/.test(t)?"Workers Compensation & Employers Liability":/auto|vehicle|garage/.test(t)?"Automobile Liability":/general liability|\bcgl\b|\bgl\b|premises|liability - general/.test(t)?"Commercial General Liability":/propert|building|contents|inland marine/.test(t)?"Property":"Other"}function Zn(e,t){if(typeof e=="number"&&Number.isFinite(e))return e;let n=String(e??t??"").replace(/[^0-9.]/g,"");if(!n)return null;let r=Number(n);return Number.isFinite(r)&&r>0?r:null}function er(e){return(Array.isArray(e)?e:e&&typeof e=="object"?Object.entries(e).map(([n,r])=>({label:n,amount:r})):[]).map(n=>{let r=n??{},a=String(r.label??"").trim();return a?{label:a,amount:Zn(r.amount,r.amount_raw),amount_raw:r.amount_raw!=null?String(r.amount_raw):r.amount!=null?String(r.amount):null}:null}).filter(n=>n!==null)}function E(e){let t=e==null?"":String(e).trim();return t||null}function je(e){if(e===!0||e===!1)return e;let t=String(e??"").toLowerCase().trim();return["y","yes","true","x","1"].includes(t)?!0:["n","no","false","0"].includes(t)?!1:null}function ft(e){let t=e.producer??{},n=e.insured??{},r=e.certificate_holder??{},a=Array.isArray(e.insurers)?e.insurers:[],i=Array.isArray(e.coverages)?e.coverages:[];return{certificate_date:Pe(E(e.certificate_date)),producer:{name:E(t.name),contact_name:E(t.contact_name),phone:E(t.phone),email:E(t.email),address:E(t.address)},insured:{name:E(n.name),address:E(n.address)},certificate_holder:{name:E(r.name),address:E(r.address)},description_of_operations:E(e.description_of_operations),insurers:a.map(s=>{let c=s??{};return{letter:E(c.letter),name:E(c.name),naic:E(c.naic)}}),coverages:i.map(s=>{let c=s??{};return{coverage_type:Xn(c.coverage_type),coverage_type_raw:E(c.coverage_type_raw)??E(c.coverage_type),insurer_letter:E(c.insurer_letter),insurer_name:E(c.insurer_name),policy_number:E(c.policy_number),effective_date:Pe(E(c.effective_date)),expiration_date:Pe(E(c.expiration_date)),additional_insured:je(c.additional_insured),subrogation_waived:je(c.subrogation_waived),primary_noncontributory:je(c.primary_noncontributory),per_project_aggregate:je(c.per_project_aggregate),notice_of_cancellation_days:c.notice_of_cancellation_days==null?null:Number(String(c.notice_of_cancellation_days).replace(/[^0-9]/g,""))||null,limits:er(c.limits)}}),notes:E(e.notes)}}var _e={vendor:"v-",certificate:"c-",requirement:"r-"},pe={vendor:"vendors",certificate:"certificates",requirement:"requirements"},tr=()=>{let e=window.claude;return e&&typeof e.use=="function"?e:null};async function te(e){let t=tr();if(!t)return null;try{return await t.use(e)}catch{return null}}async function gt(e){for(let t=0;;t++)try{return await e()}catch(n){if(!(n?.code==="resource_exhausted"||n?.code==="unavailable")||t>=3)throw n;await new Promise(a=>setTimeout(a,800*2**t+Math.random()*400))}}var yt=class{constructor(t){this.col=t;F(this,"mode","account")}async load(){let t=await this.col.limit(1e3).get();if(t.empty)return null;let n=N();for(let r of t.docs){let a=r.data();a?.record&&(a.kind==="settings"?n.settings={...n.settings,...a.record}:a.kind&&a.kind in pe&&n[pe[a.kind]].push(a.record))}return n}put(t,n,r){let a={kind:n,record:JSON.parse(JSON.stringify(r))};return gt(()=>this.col.doc(t).set(a))}remove(t){return gt(()=>this.col.doc(t).delete())}async clear(){let t=await gt(()=>this.col.limit(1e3).get());for(let n of t.docs)await this.remove(n.id)}},vt="coi-hero:data:v1",me=class{constructor(){F(this,"mode","browser");F(this,"data",N())}async load(){let t=localStorage.getItem(vt);return t?(this.data={...N(),...JSON.parse(t)},this.data):null}flush(){localStorage.setItem(vt,JSON.stringify(this.data))}track(t){this.data=t}async put(){this.flush()}async remove(){this.flush()}async clear(t){this.data=t,localStorage.removeItem(vt)}},Ge=class{constructor(){F(this,"mode","memory")}async load(){return null}async put(){}async remove(){}async clear(){}};function nr(){try{return localStorage.setItem("coi-hero:probe","1"),localStorage.removeItem("coi-hero:probe"),!0}catch{return!1}}var Ke=class{constructor(){F(this,"data",N());F(this,"backend",new Ge);F(this,"queue",Promise.resolve());F(this,"onChange",()=>{});F(this,"onNotice",()=>{})}get mode(){return this.backend.mode}async open(){let[t,n]=await Promise.all([te("db"),te("user")]),r=null;if(t&&n)try{r=await n.id()}catch{r=null}if(t&&r){let a=new yt(t.collection("data/users/"+r));try{let i=await a.load();this.backend=a,this.setData(i??N());return}catch{}}await this.useBrowser()}async useBrowser(t){if(nr()){let n=new me,r=null;try{r=await n.load()}catch{r=null}let a=t??r??N();n.track(a),this.backend=n,this.setData(a),t&&await n.put()}else this.backend=new Ge,this.setData(t??N())}setData(t){this.data=t,this.backend instanceof me&&this.backend.track(t),this.onChange(t)}write(t){let n=this.queue.then(async()=>{try{await t(this.backend)}catch(r){if(this.backend.mode==="account"){let a=r?.code;if(a==="quota_exceeded"){this.onNotice("Your COI Hero storage in Claude is full. Delete some certificates to save more.");return}if(a==="resource_exhausted"||a==="unavailable"){this.onNotice("Claude's storage is busy, so the last change wasn't saved. Make the change again in a minute.");return}this.onNotice("This page can't save to your Claude account here, so your data is now kept in this browser only."),await this.useBrowser(this.data)}else this.onNotice("Couldn't save. Your browser may be blocking storage for this page.")}});return this.queue=n.catch(()=>{}),n}replace(t,n){let r=this.data[pe[t]],a=r.findIndex(s=>s.id===n.id),i=a>=0?r.map((s,c)=>c===a?n:s):[...r,n];this.setData({...this.data,[pe[t]]:i})}save(t,n){return this.replace(t,n),this.write(r=>r.put(_e[t]+n.id,t,n))}remove(t,n){let r=pe[t],a=this.data[r];return this.setData({...this.data,[r]:a.filter(i=>i.id!==n)}),this.write(i=>i.remove(_e[t]+n))}saveSettings(t){return this.setData({...this.data,settings:t}),this.write(n=>n.put("settings","settings",t))}async replaceAll(t){let n=this.data;this.setData(t),await this.write(async r=>{if(await r.clear(n),r instanceof me)return r.track(t),r.put();await r.put("settings","settings",t.settings);for(let a of t.vendors)await r.put(_e.vendor+a.id,"vendor",a);for(let a of t.requirements)await r.put(_e.requirement+a.id,"requirement",a);for(let a of t.certificates)await r.put(_e.certificate+a.id,"certificate",a)})}},Ve=new Map,ht=null;function rr(){return ht||(ht=new Promise(e=>{try{let t=indexedDB.open("coi-hero-files",1);t.onupgradeneeded=()=>t.result.createObjectStore("files"),t.onsuccess=()=>e(t.result),t.onerror=()=>e(null)}catch{e(null)}})),ht}async function Ue(e,t){let n=await rr();return n?new Promise(r=>{try{let a=t(n.transaction("files",e).objectStore("files"));a.onsuccess=()=>r(a.result),a.onerror=()=>r(null)}catch{r(null)}}):null}var X={async put(e,t){Ve.set(e,t),await Ue("readwrite",n=>n.put(t,e))},async get(e){return await Ue("readonly",n=>n.get(e))??Ve.get(e)??null},async remove(e){Ve.delete(e),await Ue("readwrite",t=>t.delete(e))},async clear(){Ve.clear(),await Ue("readwrite",e=>e.clear())}};var bt=()=>window.pdfjsLib??null,ie=null,Ye=null;async function fe(){if(Ye)return Ye;ie=await te("sample");let e=!1,t=0;if(ie&&typeof ie.limits=="function")try{let n=await ie.limits();e=!!n?.images,t=n?.images?.maxCount??0}catch{e=!1}return Ye={claude:!!ie,images:e,maxImages:t,pdf:!!bt()},Ye}function ar(e){let t=[];for(let n of e){if(!n.str||!n.str.trim())continue;let r=n.transform[4],a=n.transform[5],i=t.find(s=>Math.abs(s.y-a)<3);i||t.push(i={y:a,parts:[]}),i.parts.push({x:r,s:n.str})}return t.sort((n,r)=>r.y-n.y),t.map(n=>n.parts.sort((r,a)=>r.x-a.x).map(r=>r.s).join("  ")).join(`
+`)}async function yn(e,t){let n=e.getViewport({scale:1}),r=Math.min(3,Math.sqrt(t/(n.width*n.height))),a=e.getViewport({scale:r}),i=document.createElement("canvas");i.width=Math.floor(a.width),i.height=Math.floor(a.height);let s=i.getContext("2d");return s.fillStyle="#fff",s.fillRect(0,0,i.width,i.height),await e.render({canvasContext:s,viewport:a}).promise,i}async function Ct(e,t,n){if(t)return{pages:1,text:"",looksScanned:!0,images:[e]};let r=bt();if(!r)throw new Error("The PDF reader didn't load. Reload the page and try again.");let a=await r.getDocument({data:new Uint8Array(await e.arrayBuffer())}).promise,i=[],s=[];for(let d=1;d<=a.numPages;d++){let o=await a.getPage(d);if(i.push(ar((await o.getTextContent()).items)),d<=n){let u=await yn(o,15e5),_=await new Promise(l=>u.toBlob(l,"image/jpeg",.92));_&&s.push(_)}}let c=i.join(`
+
+--- next page ---
+
+`);return{pages:a.numPages,text:c,looksScanned:c.replace(/\s/g,"").length<150,images:s}}async function bn(e,t){let n=bt();if(!n)throw new Error("The PDF reader didn't load.");let r=await n.getDocument({data:new Uint8Array(await e.arrayBuffer())}).promise;t.replaceChildren();for(let a=1;a<=r.numPages;a++){let i=await yn(await r.getPage(a),25e5);i.className="pdf-page",i.setAttribute("aria-label",`Page ${a}`),t.append(i)}}function vn(e){return[fn,"","Reply with only one JSON object that matches this JSON schema:",JSON.stringify(gn),"",e].join(`
+`)}var G=class extends Error{constructor(n,r){super(r);this.code=n}},hn={not_granted:"Reading was not allowed. Allow this page to use Claude, or enter the details yourself.",rate_limited:"Claude is busy with your other files. Wait a minute, then click Read again.",prompt_too_large:"This file has too much text to send in one go. Enter the details yourself.",invalid_json:"Claude answered, but not in a form COI Hero could use. Try Read again.",images_unavailable:"This page can't send pictures to Claude here.",image_rejected:"Claude couldn't use the page pictures.",cancelled:"Stopped."};async function wt(e,t={}){let n=await fe();if(!n.claude)throw new G("unavailable","This page can't ask Claude here.");let r=e.looksScanned;if(r&&!(n.images&&e.images.length))throw new G("scanned","This looks like a scan or photo, which this page can't send to Claude. Drop it into your Claude chat instead, or enter the details yourself.");let a=vn(r?"The attached images are the pages of the certificate.":`The certificate's text, taken from the PDF line by line:
+<<<
+`+e.text.slice(0,12e4)+`
+>>>`);try{let i=await ie.json(a,{signal:t.signal,images:r?e.images.slice(0,n.maxImages||1):void 0,onText:()=>t.onProgress?.("Claude is writing\u2026")});if(!i||typeof i!="object")throw new G("invalid_json",hn.invalid_json);return{result:ft(i),method:r?"pictures":"text"}}catch(i){if(i instanceof G)throw i;let s=i?.code??"unknown";throw new G(s,hn[s]??"Claude couldn't read this file. Try again, or enter the details yourself.")}}function Cn(e){let t=e.trim(),n=t.match(/```(?:json)?\s*([\s\S]*?)```/),r=n?n[1]:t.slice(t.indexOf("{"),t.lastIndexOf("}")+1),a;try{a=JSON.parse(r)}catch{throw new Error("That isn't the certificate data. Paste the whole block Claude gave you, including the { and }.")}if(!a||typeof a!="object"||!Array.isArray(a.coverages))throw new Error("That data has no coverage lines. Ask Claude for the COI Hero format again.");return ft(a)}var m=rn.bind(tt),kt="https://github.com/nkostelnik/coi-hero",kn=[{name:"dashboard",label:"Dashboard"},{name:"add",label:"Add certificates"},{name:"certificates",label:"Certificates"},{name:"vendors",label:"Vendors"},{name:"digest",label:"Digest"},{name:"requirements",label:"Requirements"},{name:"data",label:"Your data"}],Sn={active:"Active",expiring_soon:"Expiring soon",expired:"Expired",unknown:"No date"},$=new Ke,j=()=>{},A=()=>{},wn={get(e){try{return localStorage.getItem(e)}catch{return null}},set(e,t){try{localStorage.setItem(e,t)}catch{}}};function Dt({status:e}){return m`<span class=${"badge s-"+e}>${Sn[e]}</span>`}function Z({tone:e,children:t}){return m`<span class=${"pill p-"+e}>${t}</span>`}function I({to:e,children:t,cls:n}){return m`<button type="button" class=${"linkish "+(n??"")} onClick=${()=>j(e)}>${t}</button>`}function ze(e,t){return("vendor"in e&&e.vendor?e.vendor:t?.find(r=>r.id===e.vendor_id))?.name??e.insured_name??e.original_file_name}async function ge(){let e=$.data;if(!e.settings.initialized){await $.saveSettings({...e.settings,initialized:!0});for(let t of e.requirements)await $.save("requirement",t)}}async function ne(e){await ge(),await $.save("certificate",{...e,updated_at:new Date().toISOString()})}async function St(e){if(!e)return null;let t=Fe($.data.vendors,e);if(t)return t.id;let n=qe(e);return await $.save("vendor",n),n.id}function ir({mode:e}){return m`<div class="banner" role="note">
+    <strong>Demo</strong>
+    <span>${e==="account"?"Saved in your Claude account. Only you can see it.":e==="browser"?"Saved in this browser only. Clearing browser data erases it.":"Not saved: this browser is blocking storage, so data is lost when you close the page."}</span>
+    <${I} to=${{name:"data"}}>Not for company records</${I}>
+  </div>`}function or(){let[e,t]=k(wn.get("coi-hero:intro")==="hidden");return e?null:m`<section class="card intro" aria-labelledby="intro-h">
+    <h2 id="intro-h">How this demo works</h2>
+    <ul>
+      <li>Drop in certificates of insurance (PDFs). Your Claude reads them, using your Claude plan. COI Hero never sees your files or data.</li>
+      <li>Records are saved privately for you. The original PDFs stay in this browser.</li>
+      <li>This is a demo for trying COI Hero on your own files. It has no backups, team access or audit trail, so don't use it as your company's system of record. To run COI Hero properly, a technical person can set it up from the <a href=${kt} target="_blank" rel="noreferrer">GitHub project</a>.</li>
+    </ul>
+    <div class="row">
+      <button type="button" class="btn ghost" onClick=${()=>{wn.set("coi-hero:intro","hidden"),t(!0)}}>Got it</button>
+    </div>
+  </section>`}function sr(e,t){return e.flatMap(n=>n.coverages.map(r=>({cert:n,coverage:r,status:Y(r.expiration_date,t)})))}var $t=(e,t)=>(e.coverage.expiration_date??"9999").localeCompare(t.coverage.expiration_date??"9999");function lr({data:e,certs:t}){let n=e.settings.soonDays,r=sr(t,n),a=r.filter(o=>o.status==="expired").sort((o,u)=>-$t(o,u)),i=r.filter(o=>o.status==="expiring_soon").sort($t),s=r.filter(o=>o.status==="active").sort($t),c=t.filter(o=>!o.reviewed),d=e.vendors.map(o=>({vendor:o,result:de({vendorId:o.id,certs:t.filter(u=>u.vendor_id===o.id),requirements:e.requirements,soonDays:n})})).filter(o=>o.result.status==="non_compliant"||o.result.status==="no_coi");return m`<div class="stack">
+    <div class="pagehead">
+      <h1>Dashboard</h1>
+      <p class="muted">${t.length} certificates · ${e.vendors.length} vendors · “expiring soon” means within ${n} days</p>
+    </div>
+    <${or} />
+    ${t.length===0&&m`<section class="card empty">
+      <h2>No certificates yet</h2>
+      <p>Add your own certificates, or load a sample set to look around first.</p>
+      <div class="row center">
+        <button type="button" class="btn" onClick=${()=>j({name:"add"})}>Add certificates</button>
+        <button type="button" class="btn ghost" onClick=${()=>j({name:"data"})}>Load sample data</button>
+      </div>
+    </section>`}
+    ${c.length>0&&m`<button type="button" class="review-bar" onClick=${()=>j({name:"certificates"})}>
+      <span class="count">${c.length}</span>
+      <span><strong>Needs review</strong><br /><span class="muted">Not yet checked. Confirm carriers, limits and dates against each PDF.</span></span>
+    </button>`}
+    <div class="columns">
+      <${xt} title="Expired" tone="red" lines=${a} empty="Nothing expired." />
+      <${xt} title="Expiring soon" tone="amber" lines=${i} empty=${`Nothing expiring in the next ${n} days.`} />
+      <${xt} title="Active" tone="green" lines=${s} empty="No active coverage yet." />
+    </div>
+    <section class="card">
+      <div class="sechead"><h2>Vendors needing attention</h2><${I} to=${{name:"vendors"}}>All vendors</${I}></div>
+      ${d.length===0?m`<p class="muted">${e.vendors.length?"Every vendor meets its requirements.":"No vendors yet."}</p>`:m`<ul class="list">${d.slice(0,12).map(({vendor:o,result:u})=>m`<li>
+              <div class="spread"><strong>${o.name}</strong>
+                <${Z} tone=${u.status==="no_coi"?"amber":"red"}>${u.status==="no_coi"?"No COI":"Not compliant"}</${Z}></div>
+              ${u.issues.slice(0,2).map(_=>m`<div class="small muted">${_.message}</div>`)}
+            </li>`)}</ul>`}
+    </section>
+  </div>`}function xt({title:e,tone:t,lines:n,empty:r}){return m`<section class=${"col c-"+t} aria-label=${e}>
+    <div class="colhead"><span>${e}</span><span class="colcount">${n.length}</span></div>
+    <ul class="collist">
+      ${n.map(({cert:a,coverage:i})=>m`<li>
+          <${I} to=${{name:"certificate",id:a.id}} cls="strong">${ze(a)}</${I}>
+          <div class="small muted">${i.coverage_type} · expires ${z(i.expiration_date)}</div>
+        </li>`)}
+      ${n.length===0&&m`<li class="muted small">${r}</li>`}
+    </ul>
+  </section>`}function cr({support:e}){let[t,n]=k([]),[r,a]=k(!1),[i,s]=k(""),[c,d]=k(""),o=ce(null),u=ce(Promise.resolve()),_=(f,g)=>n(y=>y.map(b=>b.key===f?{...b,...g}:b));async function l(f,g){let y=f.type.startsWith("image/"),b=Ne({original_file_name:f.name,content_type:f.type||"application/pdf",file_size:f.size,has_file:!0});await X.put(b.id,f),await ne(b),_(g,{certId:b.id,message:"Opening the file\u2026"});try{let D=await fe(),O=await Ct(f,y,D.images?D.maxImages:0);if(!D.claude){b={...b,extraction_status:"manual"},await ne(b),_(g,{state:"needs-you",message:"This page can't ask Claude here. Open it to enter the details."});return}_(g,{message:"Claude is reading it (usually 10\u201360 seconds)\u2026"});let{result:q,method:re}=await wt(O,{onProgress:h=>_(g,{message:h})});b=We(b,q,re==="pictures"?"claude (page pictures)":"claude (PDF text)"),b.vendor_id=await St(q.insured.name),await ne(b),_(g,{state:"done",message:`Read ${q.coverages.length} coverage line${q.coverages.length===1?"":"s"}${q.insured.name?" for "+q.insured.name:""}. Check it against the PDF.`})}catch(D){let O=D instanceof G&&D.code==="scanned";b={...b,extraction_status:O?"skipped":"failed",extraction_error:D?.message??String(D)},await ne(b),_(g,{state:O?"needs-you":"failed",message:D?.message??String(D)})}}function p(f){if(!f)return;let g=[...f].filter(b=>/pdf|png|jpe?g|webp/i.test(b.type)||/\.pdf$/i.test(b.name)),y=g.map((b,D)=>({key:Date.now()+D,name:b.name,state:"working",message:"Waiting\u2026"}));n(b=>[...y,...b]),g.forEach((b,D)=>{u.current=u.current.then(()=>l(b,y[D].key)).catch(()=>{})})}async function v(){d("");try{let f=Cn(i),g=Ne({original_file_name:(f.insured.name??"Certificate")+" (from Claude chat)",source:"upload"});g=We(g,f,"claude (chat)"),g.vendor_id=await St(f.insured.name),await ne(g),s(""),j({name:"certificate",id:g.id})}catch(f){d(f?.message??String(f))}}let C=e?e.claude?e.images?"Claude reads each file, scans and photos included.":"Claude reads PDFs that contain text, which is most PDFs a broker sends. Scans and photos can't be read on this page: drop those into your Claude chat instead (see below).":"This page can't ask Claude here (open it inside Claude to have certificates read). You can still add files and enter the details yourself.":"Checking what this page can do\u2026";return m`<div class="stack">
+    <div class="pagehead">
+      <h1>Add certificates</h1>
+      <p class="muted">${C}</p>
+    </div>
+    <section class="card">
+      <div
+        class=${"drop"+(r?" over":"")}
+        tabindex="0"
+        role="button"
+        aria-label="Choose certificate files"
+        onClick=${()=>o.current?.click()}
+        onKeyDown=${f=>{(f.key==="Enter"||f.key===" ")&&(f.preventDefault(),o.current?.click())}}
+        onDragOver=${f=>{f.preventDefault(),a(!0)}}
+        onDragLeave=${()=>a(!1)}
+        onDrop=${f=>{f.preventDefault(),a(!1),p(f.dataTransfer?.files??null)}}
+      >
+        <strong>Drop certificates here</strong>
+        <span class="muted">or click to choose · PDF, PNG or JPG · several at once is fine</span>
+      </div>
+      <input id="file-input" ref=${o} type="file" multiple accept="application/pdf,image/png,image/jpeg,image/webp" hidden
+        onChange=${f=>{let g=f.currentTarget;p(g.files),g.value=""}} />
+      ${t.length>0&&m`<ul class="list queue" aria-live="polite">
+        ${t.map(f=>m`<li class=${"q-"+f.state}>
+            <div class="spread">
+              <strong class="wrap">${f.name}</strong>
+              ${f.certId&&f.state!=="working"?m`<${I} to=${{name:"certificate",id:f.certId}}>${f.state==="done"?"Review":"Open"}</${I}>`:m`<span class="small muted">${f.state==="working"?"Working":""}</span>`}
+            </div>
+            <div class="small">${f.message}</div>
+          </li>`)}
+      </ul>`}
+    </section>
+    <section class="card" aria-labelledby="paste-h">
+      <h2 id="paste-h">Add a scan or photo from your Claude chat</h2>
+      <p class="muted">Drop the scan into your Claude chat and say “Read this COI for COI Hero.” Claude replies with a block of data. Paste it here.</p>
+      <label class="field">
+        <span>Data from Claude</span>
+        <textarea id="paste-data" rows="5" value=${i} onInput=${f=>s(f.currentTarget.value)} placeholder='{"insured": {"name": …}, "coverages": […]}'></textarea>
+      </label>
+      ${c&&m`<p class="error">${c}</p>`}
+      <div class="row"><button type="button" class="btn" disabled=${!i.trim()} onClick=${v}>Add certificate</button></div>
+    </section>
+  </div>`}function ur({data:e,certs:t,vendorFilter:n}){let[r,a]=k("all"),[i,s]=k(n?String(n):"all"),[c,d]=k(""),o=e.settings.soonDays,u=c.trim().toLowerCase(),_=t.filter(l=>i==="all"||String(l.vendor_id)===i).flatMap(l=>l.coverages.length?l.coverages.map(p=>({c:l,cov:p,st:Y(p.expiration_date,o)})):[{c:l,cov:null,st:"unknown"}]).filter(l=>r==="all"||l.st===r).filter(l=>!u||[ze(l.c),l.c.insured_name,l.cov?.insurer_name,l.cov?.policy_number,l.cov?.coverage_type].filter(Boolean).some(p=>String(p).toLowerCase().includes(u))).sort((l,p)=>(l.cov?.expiration_date??"9999").localeCompare(p.cov?.expiration_date??"9999"));return m`<div class="stack">
+    <div class="pagehead"><h1>Certificates</h1><p class="muted">Every coverage line on file, earliest expiration first.</p></div>
+    <div class="filters">
+      <label class="field inline"><span>Search</span>
+        <input id="cert-search" type="search" value=${c} onInput=${l=>d(l.currentTarget.value)} placeholder="Vendor, carrier, policy #" /></label>
+      <label class="field inline"><span>Vendor</span>
+        <select id="cert-vendor" value=${i} onChange=${l=>s(l.currentTarget.value)}>
+          <option value="all">All vendors</option>
+          ${e.vendors.slice().sort((l,p)=>l.name.localeCompare(p.name)).map(l=>m`<option value=${String(l.id)}>${l.name}</option>`)}
+        </select></label>
+      <div class="chips" role="group" aria-label="Status">
+        ${["all","expired","expiring_soon","active","unknown"].map(l=>m`<button type="button" class=${"chip"+(r===l?" on":"")} aria-pressed=${r===l} onClick=${()=>a(l)}>
+            ${l==="all"?"All":Sn[l]}</button>`)}
+      </div>
+    </div>
+    <div class="card flush scroll">
+      <table>
+        <thead><tr><th>Vendor</th><th>Coverage</th><th>Carrier</th><th>Policy #</th><th>Limit</th><th>Expires</th><th>Status</th><th>Checked</th></tr></thead>
+        <tbody>
+          ${_.map(({c:l,cov:p,st:v})=>{let C=p?dt(p.limits):null;return m`<tr>
+              <td><${I} to=${{name:"certificate",id:l.id}} cls="strong">${ze(l)}</${I}></td>
+              <td>${p?.coverage_type??m`<span class="muted">No coverage lines</span>`}</td>
+              <td>${p?.insurer_name??"\u2013"}</td>
+              <td class="mono">${p?.policy_number??"\u2013"}</td>
+              <td class="num">${C?ue(C.amount):"\u2013"}</td>
+              <td class="num">${z(p?.expiration_date??null)}</td>
+              <td><${Dt} status=${v} /></td>
+              <td>${l.reviewed?"Yes":m`<${Z} tone="blue">Review</${Z}>`}</td>
+            </tr>`})}
+          ${_.length===0&&m`<tr><td colspan="8" class="muted center">No certificates match.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  </div>`}var $n=e=>e===1?"yes":e===0?"no":"",xn=e=>e==="yes"?1:e==="no"?0:null,L=e=>e.currentTarget.value;function W({id:e,label:t,value:n,onChange:r,type:a="text"}){return m`<label class="field"><span>${t}</span>
+    <input id=${e} type=${a} value=${n??""} onInput=${i=>r(L(i).trim()?L(i):null)} /></label>`}function dr({id:e,data:t,support:n}){let r=t.certificates.find(h=>h.id===e),[a,i]=k(r??null),[s,c]=k(""),[d,o]=k(!1),[u,_]=k(!1),[l,p]=k("hidden"),[v,C]=k(!1),f=ce(null);if(st(()=>{d||i(r??null)},[r]),!a)return m`<div class="stack"><p>That certificate no longer exists.</p><${I} to=${{name:"certificates"}}>Back to certificates</${I}></div>`;let g=h=>{i({...a,...h}),o(!0)},y=(h,x)=>g({coverages:a.coverages.map((w,T)=>T===h?{...w,...x}:w)});async function b(h){let x={...a,reviewed:h?1:a.reviewed};if(s.trim()){let w=Fe($.data.vendors,s),T=w??qe(s);w||await $.save("vendor",T),x={...x,vendor_id:T.id},c("")}await ne(x),i(x),o(!1),A(h?"Marked as checked.":"Saved.")}async function D(){await $.remove("certificate",a.id),await X.remove(a.id),A("Certificate deleted."),j({name:"certificates"})}async function O(){if(l==="shown"){p("hidden");return}p("loading");let h=await X.get(a.id);if(!h){p("missing");return}p("shown"),requestAnimationFrame(async()=>{if(f.current)try{if(a.content_type?.startsWith("image/")){let x=document.createElement("img");x.src=URL.createObjectURL(h),x.alt="Original certificate",x.className="pdf-page",f.current.replaceChildren(x)}else await bn(h,f.current)}catch{p("missing")}})}async function q(){let h=await X.get(a.id);if(!h){A("The original file isn't in this browser, so it can't be read again here.");return}C(!0);try{let x=await fe(),w=await Ct(h,!!a.content_type?.startsWith("image/"),x.images?x.maxImages:0),{result:T,method:Rn}=await wt(w),oe=We(a,T,Rn==="pictures"?"claude (page pictures)":"claude (PDF text)");oe.vendor_id==null&&(oe={...oe,vendor_id:await St(T.insured.name)}),await ne(oe),i(oe),o(!1),A("Read again. Check the values against the PDF.")}catch(x){A(x?.message??String(x))}finally{C(!1)}}let re=t.settings.soonDays;return m`<div class="stack">
+    <div class="pagehead">
+      <${I} to=${{name:"certificates"}}>← Certificates</${I}>
+      <h1>${ze(a,t.vendors)}</h1>
+      <p class="muted">${a.original_file_name} · ${a.reviewed?"Checked":"Not yet checked"}${a.extraction_model?" \xB7 read by "+a.extraction_model:""}</p>
+    </div>
+    ${a.extraction_error&&m`<p class="notice">${a.extraction_error}</p>`}
+    <div class="row">
+      <button type="button" class="btn" onClick=${()=>b(!0)}>${a.reviewed?"Save":"Save and mark checked"}</button>
+      ${d&&m`<button type="button" class="btn ghost" onClick=${()=>b()}>Save without checking</button>`}
+      ${a.has_file&&m`<button type="button" class="btn ghost" onClick=${O}>${l==="shown"?"Hide original":"Show original"}</button>`}
+      ${a.has_file&&n?.claude&&m`<button type="button" class="btn ghost" disabled=${v} onClick=${q}>${v?"Reading\u2026":"Read again with Claude"}</button>`}
+      <span class="grow"></span>
+      ${u?m`<span class="confirm">Delete this certificate? <button type="button" class="btn danger" onClick=${D}>Delete</button> <button type="button" class="btn ghost" onClick=${()=>_(!1)}>Keep</button></span>`:m`<button type="button" class="btn ghost danger-text" onClick=${()=>_(!0)}>Delete</button>`}
+    </div>
+    ${l==="missing"&&m`<p class="notice">The original file isn't in this browser. It stays on the computer where it was added.</p>`}
+    ${(l==="shown"||l==="loading")&&m`<div class="card pdfbox" ref=${f}><p class="muted">Loading…</p></div>`}
+
+    <section class="card">
+      <h2>Certificate</h2>
+      <div class="grid2">
+        <label class="field"><span>Vendor</span>
+          <select id="cert-vendor-select" value=${a.vendor_id==null?"":String(a.vendor_id)} onChange=${h=>g({vendor_id:L(h)?Number(L(h)):null})}>
+            <option value="">No vendor</option>
+            ${t.vendors.slice().sort((h,x)=>h.name.localeCompare(x.name)).map(h=>m`<option value=${String(h.id)}>${h.name}</option>`)}
+          </select></label>
+        <label class="field"><span>Or a new vendor</span>
+          <input id="cert-new-vendor" type="text" value=${s} placeholder="Vendor name" onInput=${h=>{c(L(h)),o(!0)}} /></label>
+        <${W} id="f-insured" label="Insured" value=${a.insured_name} onChange=${h=>g({insured_name:h})} />
+        <${W} id="f-insured-addr" label="Insured address" value=${a.insured_address} onChange=${h=>g({insured_address:h})} />
+        <${W} id="f-producer" label="Producer (broker)" value=${a.producer_name} onChange=${h=>g({producer_name:h})} />
+        <${W} id="f-holder" label="Certificate holder" value=${a.certificate_holder_name} onChange=${h=>g({certificate_holder_name:h})} />
+        <${W} id="f-date" label="Certificate date" type="date" value=${a.certificate_date} onChange=${h=>g({certificate_date:h})} />
+        <${W} id="f-received" label="Date received" type="date" value=${a.date_received} onChange=${h=>g({date_received:h})} />
+      </div>
+      <label class="field"><span>Description of operations</span>
+        <textarea id="f-desc" rows="3" value=${a.description_of_operations??""} onInput=${h=>g({description_of_operations:L(h)||null})}></textarea></label>
+      <label class="field"><span>Notes</span>
+        <textarea id="f-notes" rows="2" value=${a.notes??""} onInput=${h=>g({notes:L(h)||null})}></textarea></label>
+    </section>
+
+    <section class="card">
+      <div class="sechead"><h2>Coverage lines</h2>
+        <button type="button" class="btn ghost" onClick=${()=>g({coverages:[...a.coverages,Me(a.id,{sort_order:a.coverages.length})]})}>Add coverage line</button></div>
+      ${a.coverages.length===0&&m`<p class="muted">No coverage lines yet. Add one for each line on the certificate.</p>`}
+      ${a.coverages.map((h,x)=>m`<div class="coverage">
+          <div class="spread">
+            <strong>${h.coverage_type}</strong>
+            <span class="row tight"><${Dt} status=${Y(h.expiration_date,re)} />
+              <button type="button" class="btn ghost small danger-text" onClick=${()=>g({coverages:a.coverages.filter((w,T)=>T!==x)})}>Remove</button></span>
+          </div>
+          <div class="grid3">
+            <label class="field"><span>Coverage type</span>
+              <select id=${"c-type-"+h.id} value=${h.coverage_type} onChange=${w=>y(x,{coverage_type:L(w)})}>
+                ${ae.map(w=>m`<option value=${w}>${w}</option>`)}
+              </select></label>
+            <${W} id=${"c-carrier-"+h.id} label="Carrier" value=${h.insurer_name} onChange=${w=>y(x,{insurer_name:w})} />
+            <${W} id=${"c-policy-"+h.id} label="Policy #" value=${h.policy_number} onChange=${w=>y(x,{policy_number:w})} />
+            <${W} id=${"c-eff-"+h.id} label="Effective" type="date" value=${h.effective_date} onChange=${w=>y(x,{effective_date:w})} />
+            <${W} id=${"c-exp-"+h.id} label="Expires" type="date" value=${h.expiration_date} onChange=${w=>y(x,{expiration_date:w})} />
+            <div class="grid2 tight">
+              <label class="field"><span>Additional insured</span>
+                <select id=${"c-ai-"+h.id} value=${$n(h.additional_insured)} onChange=${w=>y(x,{additional_insured:xn(L(w))})}>
+                  <option value="">Not shown</option><option value="yes">Yes</option><option value="no">No</option></select></label>
+              <label class="field"><span>Waiver of subrogation</span>
+                <select id=${"c-wos-"+h.id} value=${$n(h.subrogation_waived)} onChange=${w=>y(x,{subrogation_waived:xn(L(w))})}>
+                  <option value="">Not shown</option><option value="yes">Yes</option><option value="no">No</option></select></label>
+            </div>
+          </div>
+          <${_r} id=${h.id} limits=${h.limits} onChange=${w=>y(x,{limits:w})} />
+        </div>`)}
+    </section>
+  </div>`}function _r({id:e,limits:t,onChange:n}){let r=(a,i)=>n(t.map((s,c)=>c===a?{...s,...i}:s));return m`<div class="limits">
+    <span class="label">Limits</span>
+    ${t.map((a,i)=>m`<div class="limitrow">
+        <input id=${`l-label-${e}-${i}`} aria-label="Limit name" type="text" value=${a.label} onInput=${s=>r(i,{label:L(s)})} />
+        <input id=${`l-amt-${e}-${i}`} aria-label="Amount in dollars" class="num" type="number" min="0" step="1000" value=${a.amount??""}
+          onInput=${s=>r(i,{amount:L(s)?Number(L(s)):null,amount_raw:L(s)||null})} />
+        <button type="button" class="btn ghost small" aria-label="Remove limit" onClick=${()=>n(t.filter((s,c)=>c!==i))}>×</button>
+      </div>`)}
+    <button type="button" class="btn ghost small" onClick=${()=>n([...t,{label:"Each Occurrence",amount:null,amount_raw:null}])}>Add limit</button>
+  </div>`}function pr({data:e,certs:t,onShowVendor:n}){let[r,a]=k(null),i=e.vendors.map(o=>{let u=t.filter(_=>_.vendor_id===o.id);return{v:o,count:u.length,result:de({vendorId:o.id,certs:u,requirements:e.requirements,soonDays:e.settings.soonDays})}}).sort((o,u)=>o.v.name.localeCompare(u.v.name)),s=o=>o==="compliant"?"green":o==="non_compliant"?"red":o==="no_coi"?"amber":"grey",c=o=>o==="compliant"?"Compliant":o==="non_compliant"?"Not compliant":o==="no_coi"?"No COI":"No requirements";async function d(o){for(let u of $.data.certificates.filter(_=>_.vendor_id===o))await $.save("certificate",{...u,vendor_id:null});for(let u of $.data.requirements.filter(_=>_.vendor_id===o))await $.remove("requirement",u.id);await $.remove("vendor",o),a(null),A("Vendor removed. Its certificates are kept, without a vendor.")}return m`<div class="stack">
+    <div class="pagehead"><h1>Vendors</h1><p class="muted">Each vendor's current coverage checked against your requirements.</p></div>
+    ${i.length===0&&m`<p class="muted">No vendors yet. They're created from the insured name when certificates are read.</p>`}
+    <ul class="list cards">
+      ${i.map(({v:o,count:u,result:_})=>m`<li class="card">
+          <div class="spread"><h2 class="h3">${o.name}</h2><${Z} tone=${s(_.status)}>${c(_.status)}</${Z}></div>
+          <p class="small muted">${u} certificate${u===1?"":"s"} · checked against ${_.evaluated_against==="vendor"?"this vendor's own rules":_.evaluated_against==="global"?"your standard requirements":"no requirements"}</p>
+          ${_.issues.length>0&&m`<ul class="issues">${_.issues.map(l=>m`<li class=${l.severity}>${l.message}</li>`)}</ul>`}
+          <div class="row">
+            ${u>0&&m`<button type="button" class="btn ghost small" onClick=${()=>n(o.id)}>Show certificates</button>`}
+            ${r===o.id?m`<span class="confirm small">Remove ${o.name}? <button type="button" class="btn danger small" onClick=${()=>d(o.id)}>Remove</button> <button type="button" class="btn ghost small" onClick=${()=>a(null)}>Keep</button></span>`:m`<button type="button" class="btn ghost small danger-text" onClick=${()=>a(o.id)}>Remove vendor</button>`}
+          </div>
+        </li>`)}
+    </ul>
+  </div>`}function mr({data:e,certs:t}){let n=e.settings.soonDays,r=Re(()=>on({certs:t,vendors:e.vendors,requirements:e.requirements,soonDays:n}),[t,e.vendors,e.requirements,n]),a=r.reduce((c,d)=>c+d.lines.length,0),i=r.reduce((c,d)=>c+d.gaps.length,0);async function s(){let c=await te("downloads");if(!c){A("Downloads aren't available here.");return}try{await c.save({filename:`coi-hero-digest-${new Date().toISOString().slice(0,10)}.csv`,data:sn(r)})}catch(d){d?.code!=="declined"&&A("The download didn't start. Try again in a moment.")}}return m`<div class="stack">
+    <div class="pagehead spread wraprow">
+      <div><h1>Expiration digest</h1>
+        <p class="muted">Coverage expired or expiring within ${n} days, plus compliance gaps, by vendor, earliest expiration first. ${a} coverage lines · ${i} gaps · ${r.length} vendors.</p></div>
+      <button type="button" class="btn ghost" onClick=${s}>Download digest</button>
+    </div>
+    ${r.length===0&&m`<section class="card empty"><h2>Nothing needs attention</h2><p class="muted">No coverage is expired or expiring in the next ${n} days, and every vendor meets its requirements.</p></section>`}
+    ${r.map(c=>m`<section class="card">
+        <div class="spread"><h2 class="h3">${c.name}</h2>${c.earliestExpiration&&m`<span class="small muted">Earliest: ${z(c.earliestExpiration)}</span>`}</div>
+        ${c.lines.length>0&&m`<div class="scroll"><table>
+          <thead><tr><th>Coverage</th><th>Carrier</th><th>Policy #</th><th>Expires</th><th>When</th><th>Status</th><th></th></tr></thead>
+          <tbody>${c.lines.map(({certificate:d,coverage:o,status:u,days:_})=>m`<tr>
+              <td>${o.coverage_type}</td><td>${o.insurer_name??"\u2013"}</td><td class="mono">${o.policy_number??"\u2013"}</td>
+              <td class="num">${z(o.expiration_date)}</td>
+              <td class=${"num strong "+(_<0?"t-red":"t-amber")}>${pt(_)}</td>
+              <td><${Dt} status=${u} /></td>
+              <td><${I} to=${{name:"certificate",id:d.id}}>Certificate</${I}></td>
+            </tr>`)}</tbody></table></div>`}
+        ${c.gaps.length>0&&m`<div><h3 class="label">Compliance gaps</h3><ul class="list">${c.gaps.map(({issue:d,certificate:o})=>m`<li class="spread">
+            <span class="row tight"><${Z} tone=${d.severity==="error"?"red":"amber"}>${d.severity==="error"?"Gap":"Verify"}</${Z}> <span>${d.message}</span></span>
+            ${o&&m`<${I} to=${{name:"certificate",id:o.id}}>Certificate</${I}>`}
+          </li>`)}</ul></div>`}
+      </section>`)}
+  </div>`}function fr({data:e}){let[t,n]=k(String(e.settings.soonDays)),r=e.requirements.slice().sort((s,c)=>s.scope===c.scope?s.coverage_type.localeCompare(c.coverage_type):s.scope==="global"?-1:1);async function a(){let s=Math.round(Number(t));if(!Number.isFinite(s)||s<1||s>365){A("Enter a number of days between 1 and 365.");return}await ge(),await $.saveSettings({...$.data.settings,soonDays:s}),A("Saved.")}async function i(){await ge(),await $.save("requirement",Be({coverage_type:"Commercial General Liability"}))}return m`<div class="stack">
+    <div class="pagehead"><h1>Requirements</h1><p class="muted">The minimum coverage you expect. A vendor's own rule replaces the standard rule for that coverage type.</p></div>
+    <section class="card">
+      <h2>“Expiring soon” window</h2>
+      <div class="row">
+        <label class="field inline"><span>Days</span><input id="soon-days" class="num short" type="number" min="1" max="365" value=${t} onInput=${s=>n(L(s))} /></label>
+        <button type="button" class="btn ghost" onClick=${a}>Save</button>
+      </div>
+    </section>
+    <section class="card">
+      <div class="sechead"><h2>Rules</h2><button type="button" class="btn ghost" onClick=${i}>Add rule</button></div>
+      ${r.map(s=>m`<${gr} key=${s.id} rule=${s} vendors=${e.vendors} />`)}
+      ${r.length===0&&m`<p class="muted">No rules. Add one, or restore the standard set from Your data.</p>`}
+    </section>
+  </div>`}function gr({rule:e,vendors:t}){let[n,r]=k(e),[a,i]=k(!1),s=o=>{r({...n,...o}),i(!0)},c=(o,u)=>m`<label class="field"><span>${u}</span><input id=${`${o}-${n.id}`} class="num" type="number" min="0" step="100000" value=${n[o]??""}
+      onInput=${_=>s({[o]:L(_)?Number(L(_)):null})} /></label>`,d=n.scope==="vendor"&&n.vendor_id!=null?String(n.vendor_id):"global";return m`<div class="rule">
+    <div class="grid3">
+      <label class="field"><span>Applies to</span>
+        <select id=${"r-scope-"+n.id} value=${d} onChange=${o=>{let u=L(o);s(u==="global"?{scope:"global",vendor_id:null}:{scope:"vendor",vendor_id:Number(u)})}}>
+          <option value="global">All vendors (standard)</option>
+          ${t.slice().sort((o,u)=>o.name.localeCompare(u.name)).map(o=>m`<option value=${String(o.id)}>${o.name} only</option>`)}
+        </select></label>
+      <label class="field"><span>Coverage type</span>
+        <select id=${"r-type-"+n.id} value=${n.coverage_type} onChange=${o=>s({coverage_type:L(o)})}>
+          ${ae.map(o=>m`<option value=${o}>${o}</option>`)}
+        </select></label>
+      <label class="field"><span>Required?</span>
+        <select id=${"r-req-"+n.id} value=${n.required?"1":"0"} onChange=${o=>s({required:L(o)==="1"?1:0})}>
+          <option value="1">Required</option><option value="0">Optional (not checked)</option></select></label>
+      ${c("min_each_occurrence","Minimum each occurrence ($)")}
+      ${c("min_aggregate","Minimum aggregate ($)")}
+      ${c("min_combined_single_limit","Minimum combined single limit ($)")}
+    </div>
+    <div class="row">
+      <label class="check"><input id=${"r-ai-"+n.id} type="checkbox" checked=${!!n.require_additional_insured} onChange=${o=>s({require_additional_insured:o.currentTarget.checked?1:0})} /> Additional insured required</label>
+      <label class="check"><input id=${"r-wos-"+n.id} type="checkbox" checked=${!!n.require_waiver_of_subrogation} onChange=${o=>s({require_waiver_of_subrogation:o.currentTarget.checked?1:0})} /> Waiver of subrogation required</label>
+      <span class="grow"></span>
+      ${a&&m`<button type="button" class="btn small" onClick=${async()=>{await ge(),await $.save("requirement",n),i(!1),A("Rule saved.")}}>Save rule</button>`}
+      <button type="button" class="btn ghost small danger-text" onClick=${async()=>{await ge(),await $.remove("requirement",n.id)}}>Delete</button>
+    </div>
+  </div>`}function vr({data:e,mode:t}){let[n,r]=k(""),[a,i]=k(null),s=ce(null),c=e.certificates.length>0||e.vendors.length>0;async function d(){let{data:v,files:C}=mn();await X.clear();for(let[f,g]of C)await X.put(f,new Blob([g],{type:"application/pdf"}));await $.replaceAll(v),r(""),A("Sample data loaded."),j({name:"dashboard"})}async function o(){await X.clear();let v=N();v.requirements=He(),await $.replaceAll(v),r(""),A("All your COI Hero data is deleted.")}async function u(){let v=await te("downloads");if(!v){A("Downloads aren't available here.");return}let C=JSON.stringify({format:"coi-hero-backup",version:1,exported_at:new Date().toISOString(),data:$.data},null,2);try{await v.save({filename:`coi-hero-backup-${new Date().toISOString().slice(0,10)}.json`,data:C})}catch(f){f?.code!=="declined"&&A("The download didn't start. Try again in a moment.")}}async function _(v){try{let C=JSON.parse(await v.text()),f=C?.format==="coi-hero-backup"?C.data:null;if(!f||!Array.isArray(f.certificates)||!Array.isArray(f.vendors)||!Array.isArray(f.requirements))throw new Error("bad");i({...N(),...f,settings:{...N().settings,...f.settings,initialized:!0}}),r("import")}catch{A("That file isn't a COI Hero backup.")}}async function l(){a&&(await $.replaceAll({...a,certificates:a.certificates.map(v=>({...v,has_file:!1}))}),i(null),r(""),A("Backup restored. Original PDFs aren't part of a backup."))}return m`<div class="stack">
+    <div class="pagehead"><h1>Your data</h1></div>
+    <section class="card prose">
+      <h2>Where it's kept</h2>
+      <p>${t==="account"?"Your records are saved in your Claude account, in a private space only you can see. They follow you to other computers when you open this page while signed in.":t==="browser"?"Your records are saved in this browser only. Clearing your browser data, using a private window or switching computers means they're gone, so export a backup now and then.":"This browser is blocking storage for this page, so nothing is saved. Export a backup before you close the page."}</p>
+      <p>Original PDFs stay in this browser and are never uploaded to COI Hero. When Claude reads a certificate, its text (or page pictures) goes to Claude under your account and your account's data settings.</p>
+      <p class="muted small">${e.certificates.length} certificates · ${e.vendors.length} vendors · ${e.requirements.length} rules</p>
+    </section>
+    <section class="card prose">
+      <h2>This is a demo</h2>
+      <p>COI Hero here is for trying the idea on your own certificates. It has no backups you don't make yourself, no shared team access, no audit trail and no security review, so it won't meet a company IT department's standards as it is.</p>
+      <p>The full app is open source. A technical person can run it on your company's own systems and add sign-in, backups and access controls: <a href=${kt} target="_blank" rel="noreferrer">${kt.replace("https://","")}</a></p>
+    </section>
+    <section class="card">
+      <h2>Sample data</h2>
+      <p class="muted">About 10 made-up vendors and 12 certificates with a spread of expired, expiring, under-limit and missing coverage.</p>
+      <div class="row">
+        ${n==="sample"?m`<span class="confirm">This replaces your current data. <button type="button" class="btn danger" onClick=${d}>Replace with sample data</button> <button type="button" class="btn ghost" onClick=${()=>r("")}>Cancel</button></span>`:m`<button type="button" class="btn" onClick=${()=>c?r("sample"):d()}>Load sample data</button>`}
+      </div>
+    </section>
+    <section class="card">
+      <h2>Backups</h2>
+      <p class="muted">A backup file holds your records, not the original PDFs.</p>
+      <div class="row">
+        <button type="button" class="btn ghost" onClick=${u}>Export backup</button>
+        <button type="button" class="btn ghost" onClick=${()=>s.current?.click()}>Restore a backup</button>
+        <input id="import-file" ref=${s} type="file" accept="application/json,.json" hidden onChange=${v=>{let C=v.currentTarget;C.files?.[0]&&_(C.files[0]),C.value=""}} />
+      </div>
+      ${n==="import"&&m`<p class="confirm">Restoring replaces your current data with the backup's ${a?.certificates.length??0} certificates.
+        <button type="button" class="btn danger" onClick=${l}>Restore</button> <button type="button" class="btn ghost" onClick=${()=>r("")}>Cancel</button></p>`}
+    </section>
+    <section class="card">
+      <h2>Delete everything</h2>
+      <p class="muted">Removes all certificates, vendors and rules, and the PDFs kept in this browser. Requirements go back to the standard set.</p>
+      ${n==="delete"?m`<p class="confirm">This can't be undone. <button type="button" class="btn danger" onClick=${o}>Delete all my data</button> <button type="button" class="btn ghost" onClick=${()=>r("")}>Cancel</button></p>`:m`<div class="row"><button type="button" class="btn ghost danger-text" onClick=${()=>r("delete")}>Delete all my data</button></div>`}
+    </section>
+  </div>`}function hr(){try{let e=location.hash.replace(/^#/,"");if(kn.some(t=>t.name===e))return{name:e}}catch{}return{name:"dashboard"}}function yr(){let[e,t]=k($.data),[n,r]=k($.mode),[a,i]=k(!1),[s,c]=k(hr()),[d,o]=k(null),[u,_]=k(null),[l,p]=k("");j=g=>{g.name!=="certificates"&&o(null),c(g);try{g.name!=="certificate"&&history.replaceState(null,"","#"+g.name)}catch{}try{window.scrollTo({top:0})}catch{}},A=g=>{p(g),setTimeout(()=>p(y=>y===g?"":y),5e3)},st(()=>{$.onChange=g=>{t(g),r($.mode)},$.onNotice=g=>A(g),$.open().then(()=>{!$.data.settings.initialized&&$.data.requirements.length===0&&($.data.requirements=He(),t({...$.data})),r($.mode),i(!0)}),fe().then(_)},[]);let v=Re(()=>pn(e),[e]),C=s.name==="certificate"?"certificates":s.name,f;return a?s.name==="dashboard"?f=m`<${lr} data=${e} certs=${v} />`:s.name==="add"?f=m`<${cr} support=${u} />`:s.name==="certificates"?f=m`<${ur} key=${"v"+d} data=${e} certs=${v} vendorFilter=${d} />`:s.name==="certificate"?f=m`<${dr} key=${s.id} id=${s.id} data=${e} support=${u} />`:s.name==="vendors"?f=m`<${pr} data=${e} certs=${v} onShowVendor=${g=>{j({name:"certificates"}),o(g)}} />`:s.name==="digest"?f=m`<${mr} data=${e} certs=${v} />`:s.name==="requirements"?f=m`<${fr} key=${e.settings.soonDays} data=${e} />`:f=m`<${vr} data=${e} mode=${n} />`:f=m`<p class="muted">Opening your COI Hero data…</p>`,m`<div class="app">
+    <header class="top">
+      <div class="brand"><span class="mark" aria-hidden="true">C</span><span>COI Hero</span></div>
+      <nav class="tabs" aria-label="Sections">
+        ${kn.map(g=>m`<button type="button" class=${"tab"+(C===g.name?" on":"")} aria-current=${C===g.name?"page":void 0} onClick=${()=>j({name:g.name})}>${g.label}</button>`)}
+      </nav>
+    </header>
+    ${a&&m`<${ir} mode=${n} />`}
+    <main>${f}</main>
+    <div class="toast" role="status" aria-live="polite" hidden=${!l}>${l}</div>
+  </div>`}function Dn(e){jt(m`<${yr} />`,e)}var En=document.getElementById("app");En&&Dn(En);})();
+</script>
